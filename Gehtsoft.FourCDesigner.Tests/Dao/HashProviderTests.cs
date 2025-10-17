@@ -1,16 +1,32 @@
 using Gehtsoft.FourCDesigner.Dao;
+using Gehtsoft.FourCDesigner.Dao.Configuration;
 using Xunit;
 using FluentAssertions;
+using Moq;
 
 namespace Gehtsoft.FourCDesigner.Tests.Dao;
 
 public class HashProviderTests
 {
+    private readonly Mock<IHashProviderConfiguration> mConfigurationMock;
     private readonly HashProvider mHashProvider;
 
     public HashProviderTests()
     {
-        mHashProvider = new HashProvider();
+        mConfigurationMock = new Mock<IHashProviderConfiguration>();
+        mConfigurationMock.Setup(c => c.Salt).Returns("TestSalt123");
+        mHashProvider = new HashProvider(mConfigurationMock.Object);
+    }
+
+    [Fact]
+    public void Constructor_WithNullConfiguration_ShouldThrowArgumentNullException()
+    {
+        // Act
+        Action act = () => new HashProvider(null);
+
+        // Assert
+        act.Should().Throw<ArgumentNullException>()
+            .WithParameterName("configuration");
     }
 
     [Fact]
@@ -106,9 +122,9 @@ public class HashProviderTests
                 differentChars++;
         }
 
-        // At least 50% of characters should be different (SHA256 avalanche effect)
+        // At least 50% of characters should be different (SHA512 avalanche effect)
         differentChars.Should().BeGreaterThan(hash1.Length / 2,
-            "SHA256 should have avalanche effect - small input changes should cause large output changes");
+            "SHA512 should have avalanche effect - small input changes should cause large output changes");
     }
 
     [Fact]
@@ -176,5 +192,86 @@ public class HashProviderTests
 
         // Assert
         result.Should().BeFalse();
+    }
+
+    [Fact]
+    public void ComputeHash_WithDifferentSalts_ProducesDifferentHashes()
+    {
+        // Arrange
+        var config1Mock = new Mock<IHashProviderConfiguration>();
+        config1Mock.Setup(c => c.Salt).Returns("Salt1");
+        var hashProvider1 = new HashProvider(config1Mock.Object);
+
+        var config2Mock = new Mock<IHashProviderConfiguration>();
+        config2Mock.Setup(c => c.Salt).Returns("Salt2");
+        var hashProvider2 = new HashProvider(config2Mock.Object);
+
+        string password = "testpassword";
+
+        // Act
+        string hash1 = hashProvider1.ComputeHash(password);
+        string hash2 = hashProvider2.ComputeHash(password);
+
+        // Assert
+        hash1.Should().NotBe(hash2, "different salts should produce different hashes for the same password");
+    }
+
+    [Fact]
+    public void ComputeHash_WithSameSalt_ProducesSameHashes()
+    {
+        // Arrange
+        var config1Mock = new Mock<IHashProviderConfiguration>();
+        config1Mock.Setup(c => c.Salt).Returns("SameSalt");
+        var hashProvider1 = new HashProvider(config1Mock.Object);
+
+        var config2Mock = new Mock<IHashProviderConfiguration>();
+        config2Mock.Setup(c => c.Salt).Returns("SameSalt");
+        var hashProvider2 = new HashProvider(config2Mock.Object);
+
+        string password = "testpassword";
+
+        // Act
+        string hash1 = hashProvider1.ComputeHash(password);
+        string hash2 = hashProvider2.ComputeHash(password);
+
+        // Assert
+        hash1.Should().Be(hash2, "same salt should produce same hash for the same password");
+    }
+
+    [Fact]
+    public void ComputeHash_UsesConfiguredSalt()
+    {
+        // Arrange
+        const string testSalt = "MyTestSalt";
+        mConfigurationMock.Setup(c => c.Salt).Returns(testSalt);
+
+        // Act
+        string hash = mHashProvider.ComputeHash("password");
+
+        // Assert
+        mConfigurationMock.Verify(c => c.Salt, Times.Once);
+        hash.Should().NotBeNullOrEmpty();
+    }
+
+    [Fact]
+    public void ValidatePassword_WithDifferentSaltProvider_ReturnsFalse()
+    {
+        // Arrange
+        var config1Mock = new Mock<IHashProviderConfiguration>();
+        config1Mock.Setup(c => c.Salt).Returns("OriginalSalt");
+        var hashProvider1 = new HashProvider(config1Mock.Object);
+
+        var config2Mock = new Mock<IHashProviderConfiguration>();
+        config2Mock.Setup(c => c.Salt).Returns("DifferentSalt");
+        var hashProvider2 = new HashProvider(config2Mock.Object);
+
+        string password = "testpassword";
+        string hash = hashProvider1.ComputeHash(password);
+
+        // Act
+        bool result = hashProvider2.ValidatePassword(password, hash);
+
+        // Assert
+        result.Should().BeFalse("password validation should fail when using different salt");
     }
 }

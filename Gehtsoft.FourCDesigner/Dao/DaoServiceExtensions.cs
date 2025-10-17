@@ -1,5 +1,6 @@
 using Microsoft.Extensions.DependencyInjection;
 using Gehtsoft.FourCDesigner.Utils;
+using Gehtsoft.FourCDesigner.Dao.Configuration;
 
 namespace Gehtsoft.FourCDesigner.Dao;
 
@@ -18,14 +19,20 @@ public static class DaoServiceExtensions
         // Register database configuration
         services.AddSingleton<IDbConfiguration, DbConfiguration>();
 
-        // Register database connection factory
-        services.AddSingleton<IDbConnectionFactory, DbConnectionFactory>();
+        // Register hash provider configuration
+        services.AddSingleton<IHashProviderConfiguration, HashProviderConfiguration>();
 
         // Register hash provider
         services.AddSingleton<IHashProvider, HashProvider>();
 
-        // Register data access objects
-        services.AddScoped<IUserDao, UserDao>();
+        // Register database initialization service
+        services.AddSingleton<IDbInitializationService, DbInitializationService>();
+
+        // Register database connection factory
+        services.AddSingleton<IDbConnectionFactory, DbConnectionFactory>();
+
+        // Register data access objects as singleton (stateless, creates connections on the fly)
+        services.AddSingleton<IUserDao, UserDao>();
 
         return services;
     }

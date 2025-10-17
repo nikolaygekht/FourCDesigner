@@ -24,7 +24,7 @@ public class SessionSettings : ISessionSettings
     {
         get
         {
-            string? value = mConfiguration["system:session:timeoutInSeconds"];
+            string? value = mConfiguration["system:session:sessionExpirationInSeconds"];
             if (string.IsNullOrEmpty(value))
                 return 600.0; // Default: 10 minutes
 

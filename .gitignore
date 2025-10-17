@@ -9,7 +9,8 @@ deploy/
 *.user
 *.~*
 *.db
-Logs/
+logs/
+data/
 *local*.json
 ./Docker/bin/
 ./Docker/Logs/

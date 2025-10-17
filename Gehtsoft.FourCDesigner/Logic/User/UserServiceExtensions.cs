@@ -17,11 +17,11 @@ public static class UserServiceExtensions
         // Register user configuration
         services.AddSingleton<IUserConfiguration, UserConfiguration>();
 
-        // Register password validator
-        services.AddScoped<IPasswordValidator, PasswordValidator>();
+        // Register password validator as singleton (stateless)
+        services.AddSingleton<IPasswordValidator, PasswordValidator>();
 
-        // Register user controller
-        services.AddScoped<IUserController, UserController>();
+        // Register user controller as singleton (used by SessionController which is singleton)
+        services.AddSingleton<IUserController, UserController>();
 
         return services;
     }

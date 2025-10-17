@@ -24,4 +24,10 @@ public interface IMessages
     string UserAlreadyExists(string email);
     string UserNotFound(string email);
     string InvalidCredentials { get; }
+
+    // Email messages
+    string ActivationEmailSubject { get; }
+    string ActivationEmailBody(string token, double expirationInSeconds);
+    string PasswordResetEmailSubject { get; }
+    string PasswordResetEmailBody(string token, double expirationInSeconds);
 }

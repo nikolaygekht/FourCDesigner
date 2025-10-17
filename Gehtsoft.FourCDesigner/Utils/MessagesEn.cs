@@ -47,4 +47,24 @@ public class MessagesEn : IMessages
 
     /// <inheritdoc/>
     public string InvalidCredentials => "Invalid email or password";
+
+    /// <inheritdoc/>
+    public string ActivationEmailSubject => "Activate Your Account";
+
+    /// <inheritdoc/>
+    public string ActivationEmailBody(string token, double expirationInSeconds)
+    {
+        int minutes = (int)(expirationInSeconds / 60);
+        return $"Your activation code is: {token}\n\nThis code will expire in {minutes} minutes.";
+    }
+
+    /// <inheritdoc/>
+    public string PasswordResetEmailSubject => "Password Reset Request";
+
+    /// <inheritdoc/>
+    public string PasswordResetEmailBody(string token, double expirationInSeconds)
+    {
+        int minutes = (int)(expirationInSeconds / 60);
+        return $"Your password reset code is: {token}\n\nThis code will expire in {minutes} minutes.\n\nIf you did not request a password reset, please ignore this email.";
+    }
 }

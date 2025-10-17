@@ -9,7 +9,6 @@ namespace Gehtsoft.FourCDesigner
 
         public static void Main(string[] args)
         {
-
             mConfiguration = new ConfigurationBuilder()
                 .SetBasePath(Directory.GetCurrentDirectory())
                 .AddJsonFile("Config/appsettings.json", optional: false, reloadOnChange: true)
@@ -28,24 +27,7 @@ namespace Gehtsoft.FourCDesigner
             {
                 Log.Information("Starting web application");
 
-            using var app =
-                Host.CreateDefaultBuilder(args)
-                .ConfigureAppConfiguration((context, config) =>
-                    {
-                        config.Sources.Clear();
-                        config.AddConfiguration(mConfiguration);
-                    })
-                .ConfigureWebHostDefaults(webHostBuilder
-                        => webHostBuilder
-                        .UseKestrel()
-                        .UseStartup<Startup>())
-                .UseSerilog(
-                    (hostingContext, loggerConfig) =>
-                        loggerConfig
-                            .ReadFrom.Configuration(hostingContext.Configuration)
-                            .Enrich.FromLogContext(),
-                    writeToProviders: true)
-                .Build();
+                using var app = CreateHostBuilder(args).Build();
 
                 app.Run();
             }
@@ -58,6 +40,28 @@ namespace Gehtsoft.FourCDesigner
                 Log.CloseAndFlush();
             }
         }
+
+        public static IHostBuilder CreateHostBuilder(string[] args) =>
+            Host.CreateDefaultBuilder(args)
+                .ConfigureAppConfiguration((context, config) =>
+                {
+                    // If mConfiguration is not initialized (e.g., in tests), skip this
+                    if (mConfiguration != null)
+                    {
+                        config.Sources.Clear();
+                        config.AddConfiguration(mConfiguration);
+                    }
+                })
+                .ConfigureWebHostDefaults(webHostBuilder
+                    => webHostBuilder
+                    .UseKestrel()
+                    .UseStartup<Startup>())
+                .UseSerilog(
+                    (hostingContext, loggerConfig) =>
+                        loggerConfig
+                            .ReadFrom.Configuration(hostingContext.Configuration)
+                            .Enrich.FromLogContext(),
+                    writeToProviders: true);
 
     }
 }

@@ -5,6 +5,11 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Gehtsoft.FourCDesigner.Dao;
 using Gehtsoft.FourCDesigner.Logic.User;
+using Gehtsoft.FourCDesigner.Logic.Session;
+using Gehtsoft.FourCDesigner.Logic.Email;
+using Gehtsoft.FourCDesigner.Logic.Token;
+using Gehtsoft.FourCDesigner.Middleware;
+using Gehtsoft.FourCDesigner.Middleware.Throttling;
 using Gehtsoft.FourCDesigner.Utils;
 
 namespace Gehtsoft.FourCDesigner
@@ -24,7 +29,7 @@ namespace Gehtsoft.FourCDesigner
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddControllers();
-            services.AddAutoMapper(typeof(Startup));
+            services.AddAutoMapper(cfg => { }, typeof(Startup));
             services.AddCors(options =>
             {
                 options.AddPolicy("AllowFrontend", policy =>
@@ -44,8 +49,20 @@ namespace Gehtsoft.FourCDesigner
             // Register DAO services (database, connection factory, DAOs)
             services.AddDaoServices();
 
+            // Register token services (token generation and validation)
+            services.AddTokenServices();
+
             // Register user services (configuration, validators, controllers)
             services.AddUserServices();
+
+            // Register session services (session management)
+            services.AddSessionServices();
+
+            // Register email services (email queue and background sender)
+            services.AddEmailServices();
+
+            // Register throttling services (rate limiting)
+            services.AddThrottling();
 
         }
 
@@ -77,6 +94,10 @@ namespace Gehtsoft.FourCDesigner
             });
 
             app.UseCors("AllowOrigin");
+
+            // Add SSI middleware (must be before UseStaticFiles)
+            app.UseMiddleware<SsiMiddleware>();
+
             app.UseStaticFiles();
             app.UseRouting();
 

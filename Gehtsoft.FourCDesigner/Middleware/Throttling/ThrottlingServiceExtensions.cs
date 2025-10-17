@@ -101,9 +101,6 @@ namespace Gehtsoft.FourCDesigner.Middleware.Throttling
 
                 // Configure rejection behavior
                 options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
-
-                // Optional: Global limiter (disabled by default)
-                options.GlobalLimiter = PartitionedRateLimiter.CreateChained<HttpContext>();
             });
 
             return services;

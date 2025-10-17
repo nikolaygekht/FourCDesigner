@@ -1019,12 +1019,3 @@ For every new feature, ensure:
 - [ ] XML documentation on all public APIs
 - [ ] Integration tests with SQLite
 
-## Related Documents
-
-**IMPORTANT: Read all files linked below for complete context (paths are relative to .claude/coding/ directory):**
-
-- [.NET Coding Style Guide](./CODINGGUIDE_CS.md)
-- [JavaScript Coding Style Guide](./CODINGGUIDE_JS.md)
-- [HTML Coding Style Guide](./CODINGGUIDE_HTML.md)
-- [Gehtsoft.EF Reference](./EF.md) - Database framework patterns
-- [Testing](./TESTING.md)

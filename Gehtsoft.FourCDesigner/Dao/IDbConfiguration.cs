@@ -14,4 +14,9 @@ public interface IDbConfiguration
     /// Gets the database connection string.
     /// </summary>
     string ConnectionString { get; }
+
+    /// <summary>
+    /// Gets a value indicating whether to create a test user on database initialization.
+    /// </summary>
+    bool CreateTestUser { get; }
 }

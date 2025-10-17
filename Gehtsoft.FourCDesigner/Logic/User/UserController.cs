@@ -1,5 +1,8 @@
 using AutoMapper;
 using Gehtsoft.FourCDesigner.Dao;
+using Gehtsoft.FourCDesigner.Logic.Email;
+using Gehtsoft.FourCDesigner.Logic.Email.Model;
+using Gehtsoft.FourCDesigner.Logic.Token;
 using Gehtsoft.FourCDesigner.Utils;
 
 namespace Gehtsoft.FourCDesigner.Logic.User;
@@ -12,6 +15,8 @@ public class UserController : IUserController
     private readonly IUserDao mUserDao;
     private readonly IHashProvider mHashProvider;
     private readonly IPasswordValidator mPasswordValidator;
+    private readonly ITokenService mTokenService;
+    private readonly IEmailService mEmailService;
     private readonly IMessages mMessages;
     private readonly IMapper mMapper;
     private readonly ILogger<UserController> mLogger;
@@ -22,6 +27,8 @@ public class UserController : IUserController
     /// <param name="userDao">The user data access object.</param>
     /// <param name="hashProvider">The password hash provider.</param>
     /// <param name="passwordValidator">The password validator.</param>
+    /// <param name="tokenService">The token service.</param>
+    /// <param name="emailService">The email service.</param>
     /// <param name="messages">The localized messages provider.</param>
     /// <param name="mapper">The AutoMapper instance.</param>
     /// <param name="logger">The logger.</param>
@@ -30,6 +37,8 @@ public class UserController : IUserController
         IUserDao userDao,
         IHashProvider hashProvider,
         IPasswordValidator passwordValidator,
+        ITokenService tokenService,
+        IEmailService emailService,
         IMessages messages,
         IMapper mapper,
         ILogger<UserController> logger)
@@ -37,6 +46,8 @@ public class UserController : IUserController
         mUserDao = userDao ?? throw new ArgumentNullException(nameof(userDao));
         mHashProvider = hashProvider ?? throw new ArgumentNullException(nameof(hashProvider));
         mPasswordValidator = passwordValidator ?? throw new ArgumentNullException(nameof(passwordValidator));
+        mTokenService = tokenService ?? throw new ArgumentNullException(nameof(tokenService));
+        mEmailService = emailService ?? throw new ArgumentNullException(nameof(emailService));
         mMessages = messages ?? throw new ArgumentNullException(nameof(messages));
         mMapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
         mLogger = logger ?? throw new ArgumentNullException(nameof(logger));
@@ -95,7 +106,7 @@ public class UserController : IUserController
     }
 
     /// <inheritdoc/>
-    public int RegisterUser(string email, string password)
+    public async Task<bool> RegisterUser(string email, string password, CancellationToken cancellationToken = default)
     {
         ValidateUserData(email, password);
 
@@ -103,19 +114,35 @@ public class UserController : IUserController
         {
             mLogger.LogInformation("Registering new user with email: {Email}", email);
 
-            // Create new user
+            // Create new inactive user
             var user = new Entities.User
             {
                 Email = email,
                 PasswordHash = mHashProvider.ComputeHash(password),
                 Role = "user",
-                ActiveUser = true
+                ActiveUser = false
             };
 
             mUserDao.SaveUser(user);
+            mLogger.LogInformation("Successfully created inactive user {UserId} with email: {Email}", user.Id, email);
 
-            mLogger.LogInformation("Successfully registered user {UserId} with email: {Email}", user.Id, email);
-            return user.Id;
+            // Generate activation token
+            string token = mTokenService.GenerateToken(email);
+            mLogger.LogDebug("Generated activation token for user: {Email}", email);
+
+            // Send activation email and trigger immediate processing
+            var emailMessage = EmailMessage.Create(
+                email,
+                mMessages.ActivationEmailSubject,
+                mMessages.ActivationEmailBody(token, mTokenService.ExpirationInSeconds),
+                html: false,
+                priority: true
+            );
+
+            await mEmailService.SendEmailAndTriggerProcessorAsync(emailMessage, cancellationToken);
+            mLogger.LogInformation("Sent activation email to: {Email}", email);
+
+            return true;
         }
         catch (Exception ex) when (ex is not ValidationException)
         {
@@ -189,11 +216,21 @@ public class UserController : IUserController
     }
 
     /// <inheritdoc/>
-    public bool ActivateUser(string email)
+    public bool ActivateUser(string email, string token)
     {
+        if (string.IsNullOrWhiteSpace(email) || string.IsNullOrWhiteSpace(token))
+            return false;
+
         try
         {
-            mLogger.LogInformation("Activating user {Email}", email);
+            mLogger.LogInformation("Activating user {Email} with token", email);
+
+            // Validate token and remove it to prevent reuse
+            if (!mTokenService.ValidateToken(token, email, true))
+            {
+                mLogger.LogWarning("Activation failed: invalid token for user {Email}", email);
+                return false;
+            }
 
             bool updated = mUserDao.ActivateUserByEmail(email);
             if (!updated)
@@ -279,6 +316,115 @@ public class UserController : IUserController
         catch (Exception ex) when (ex is not ValidationException)
         {
             mLogger.LogError(ex, "Failed to change password for user {Email}", email);
+            throw;
+        }
+    }
+
+    /// <inheritdoc/>
+    public async Task RequestPasswordReset(string email, CancellationToken cancellationToken = default)
+    {
+        if (string.IsNullOrWhiteSpace(email))
+            return;
+
+        try
+        {
+            mLogger.LogInformation("Password reset requested for email: {Email}", email);
+
+            // Check if user exists and is active
+            Entities.User? user = mUserDao.GetUserByEmail(email);
+            if (user == null || !user.ActiveUser)
+            {
+                mLogger.LogDebug("Password reset request ignored: user {Email} not found or inactive", email);
+                return; // Silent failure for security reasons
+            }
+
+            // Generate password reset token
+            string token = mTokenService.GenerateToken(email);
+            mLogger.LogDebug("Generated password reset token for user: {Email}", email);
+
+            // Send password reset email and trigger immediate processing
+            var emailMessage = EmailMessage.Create(
+                email,
+                mMessages.PasswordResetEmailSubject,
+                mMessages.PasswordResetEmailBody(token, mTokenService.ExpirationInSeconds),
+                html: false,
+                priority: true
+            );
+
+            await mEmailService.SendEmailAndTriggerProcessorAsync(emailMessage, cancellationToken);
+            mLogger.LogInformation("Sent password reset email to: {Email}", email);
+        }
+        catch (Exception ex)
+        {
+            mLogger.LogError(ex, "Failed to process password reset request for email: {Email}", email);
+            // Silent failure for security reasons
+        }
+    }
+
+    /// <inheritdoc/>
+    public bool ValidateToken(string email, string token)
+    {
+        if (string.IsNullOrWhiteSpace(email) || string.IsNullOrWhiteSpace(token))
+            return false;
+
+        // Do not remove the token, just validate it
+        return mTokenService.ValidateToken(token, email, false);
+    }
+
+    /// <inheritdoc/>
+    public bool ResetPassword(string email, string token, string newPassword)
+    {
+        if (string.IsNullOrWhiteSpace(email) || string.IsNullOrWhiteSpace(token))
+            return false;
+
+        var errors = new List<ValidationError>();
+
+        if (string.IsNullOrWhiteSpace(newPassword))
+            errors.Add(new ValidationError("password", mMessages.PasswordCannotBeEmpty));
+        else
+        {
+            // Validate password
+            List<string> passwordErrors;
+            if (!mPasswordValidator.ValidatePassword(newPassword, out passwordErrors))
+            {
+                mLogger.LogWarning("Password validation failed for password reset: {Email}", email);
+                if (passwordErrors != null && passwordErrors.Count > 0)
+                    errors.Add(new ValidationError("password", passwordErrors));
+                else
+                    errors.Add(new ValidationError("password", "Password validation failed"));
+            }
+        }
+
+        if (errors.Count > 0)
+            throw new ValidationException(errors.ToArray());
+
+        try
+        {
+            mLogger.LogInformation("Resetting password for user {Email} with token", email);
+
+            // Validate token and remove it to prevent reuse
+            if (!mTokenService.ValidateToken(token, email, true))
+            {
+                mLogger.LogWarning("Password reset failed: invalid token for user {Email}", email);
+                return false;
+            }
+
+            // Update password
+            string passwordHash = mHashProvider.ComputeHash(newPassword);
+            bool updated = mUserDao.UpdatePasswordByEmail(email, passwordHash);
+
+            if (!updated)
+            {
+                mLogger.LogWarning("Password reset failed: user {Email} not found", email);
+                return false;
+            }
+
+            mLogger.LogInformation("Successfully reset password for user {Email}", email);
+            return true;
+        }
+        catch (Exception ex) when (ex is not ValidationException)
+        {
+            mLogger.LogError(ex, "Failed to reset password for user {Email}", email);
             throw;
         }
     }

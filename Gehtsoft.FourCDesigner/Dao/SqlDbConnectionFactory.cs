@@ -9,19 +9,25 @@ public class DbConnectionFactory : IDbConnectionFactory
 {
     private readonly string mDriver;
     private readonly string mConnectionString;
+    private readonly IDbInitializationService mInitializationService;
     private readonly ILogger<DbConnectionFactory> mLogger;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="DbConnectionFactory"/> class.
     /// </summary>
     /// <param name="dbConfiguration">The database configuration.</param>
+    /// <param name="initializationService">The database initialization service.</param>
     /// <param name="logger">The logger.</param>
-    /// <exception cref="ArgumentNullException">Thrown when dbConfiguration or logger is null.</exception>
-    public DbConnectionFactory(IDbConfiguration dbConfiguration, ILogger<DbConnectionFactory> logger)
+    /// <exception cref="ArgumentNullException">Thrown when dbConfiguration, initializationService, or logger is null.</exception>
+    public DbConnectionFactory(
+        IDbConfiguration dbConfiguration,
+        IDbInitializationService initializationService,
+        ILogger<DbConnectionFactory> logger)
     {
         if (dbConfiguration == null)
             throw new ArgumentNullException(nameof(dbConfiguration));
 
+        mInitializationService = initializationService ?? throw new ArgumentNullException(nameof(initializationService));
         mLogger = logger ?? throw new ArgumentNullException(nameof(logger));
         mDriver = dbConfiguration.Driver;
         mConnectionString = dbConfiguration.ConnectionString;
@@ -36,6 +42,11 @@ public class DbConnectionFactory : IDbConnectionFactory
         {
             mLogger.LogDebug("Creating database connection using driver: {Driver}", mDriver);
             SqlDbConnection connection = UniversalSqlDbFactory.Create(mDriver, mConnectionString);
+
+            // Initialize database on first connection
+            if (!mInitializationService.IsInitialized)
+                mInitializationService.InitializeDatabase(connection);
+
             mLogger.LogDebug("Database connection created successfully");
             return connection;
         }
@@ -53,6 +64,11 @@ public class DbConnectionFactory : IDbConnectionFactory
         {
             mLogger.LogDebug("Creating database connection asynchronously using driver: {Driver}", mDriver);
             SqlDbConnection connection = await UniversalSqlDbFactory.CreateAsync(mDriver, mConnectionString, cancellationToken);
+
+            // Initialize database on first connection
+            if (!mInitializationService.IsInitialized)
+                mInitializationService.InitializeDatabase(connection);
+
             mLogger.LogDebug("Database connection created successfully");
             return connection;
         }

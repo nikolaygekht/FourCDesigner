@@ -2,6 +2,8 @@ using AutoMapper;
 using Gehtsoft.FourCDesigner.Dao;
 using Gehtsoft.FourCDesigner.Entities;
 using Gehtsoft.FourCDesigner.Logic;
+using Gehtsoft.FourCDesigner.Logic.Email;
+using Gehtsoft.FourCDesigner.Logic.Token;
 using Gehtsoft.FourCDesigner.Logic.User;
 using Gehtsoft.FourCDesigner.Utils;
 using Microsoft.Extensions.Logging;
@@ -16,6 +18,8 @@ public class UserControllerTests
     private readonly Mock<IUserDao> mMockUserDao;
     private readonly Mock<IHashProvider> mMockHashProvider;
     private readonly Mock<IPasswordValidator> mMockPasswordValidator;
+    private readonly Mock<ITokenService> mMockTokenService;
+    private readonly Mock<IEmailService> mMockEmailService;
     private readonly Mock<IMessages> mMockMessages;
     private readonly Mock<IMapper> mMockMapper;
     private readonly Mock<ILogger<UserController>> mMockLogger;
@@ -26,6 +30,8 @@ public class UserControllerTests
         mMockUserDao = new Mock<IUserDao>();
         mMockHashProvider = new Mock<IHashProvider>();
         mMockPasswordValidator = new Mock<IPasswordValidator>();
+        mMockTokenService = new Mock<ITokenService>();
+        mMockEmailService = new Mock<IEmailService>();
         mMockMessages = new Mock<IMessages>();
         mMockMapper = new Mock<IMapper>();
         mMockLogger = new Mock<ILogger<UserController>>();
@@ -35,11 +41,17 @@ public class UserControllerTests
         mMockMessages.Setup(m => m.PasswordCannotBeEmpty).Returns("Password cannot be empty");
         mMockMessages.Setup(m => m.UserAlreadyExists(It.IsAny<string>())).Returns((string email) => $"User with email '{email}' already exists");
         mMockMessages.Setup(m => m.UserNotFound(It.IsAny<string>())).Returns((string email) => $"User with email '{email}' not found");
+        mMockMessages.Setup(m => m.ActivationEmailSubject).Returns("Activate Your Account");
+        mMockMessages.Setup(m => m.ActivationEmailBody(It.IsAny<string>(), It.IsAny<double>()))
+            .Returns((string token, double exp) => $"Activation code: {token}");
+        mMockTokenService.Setup(t => t.ExpirationInSeconds).Returns(300.0);
 
         mController = new UserController(
             mMockUserDao.Object,
             mMockHashProvider.Object,
             mMockPasswordValidator.Object,
+            mMockTokenService.Object,
+            mMockEmailService.Object,
             mMockMessages.Object,
             mMockMapper.Object,
             mMockLogger.Object);
@@ -49,7 +61,7 @@ public class UserControllerTests
     public void Constructor_WithNullUserDao_ThrowsArgumentNullException()
     {
         // Act
-        Action act = () => new UserController(null!, mMockHashProvider.Object, mMockPasswordValidator.Object, mMockMessages.Object, mMockMapper.Object, mMockLogger.Object);
+        Action act = () => new UserController(null!, mMockHashProvider.Object, mMockPasswordValidator.Object, mMockTokenService.Object, mMockEmailService.Object, mMockMessages.Object, mMockMapper.Object, mMockLogger.Object);
 
         // Assert
         act.Should().Throw<ArgumentNullException>().WithParameterName("userDao");
@@ -59,7 +71,7 @@ public class UserControllerTests
     public void Constructor_WithNullHashProvider_ThrowsArgumentNullException()
     {
         // Act
-        Action act = () => new UserController(mMockUserDao.Object, null!, mMockPasswordValidator.Object, mMockMessages.Object, mMockMapper.Object, mMockLogger.Object);
+        Action act = () => new UserController(mMockUserDao.Object, null!, mMockPasswordValidator.Object, mMockTokenService.Object, mMockEmailService.Object, mMockMessages.Object, mMockMapper.Object, mMockLogger.Object);
 
         // Assert
         act.Should().Throw<ArgumentNullException>().WithParameterName("hashProvider");
@@ -69,7 +81,7 @@ public class UserControllerTests
     public void Constructor_WithNullPasswordValidator_ThrowsArgumentNullException()
     {
         // Act
-        Action act = () => new UserController(mMockUserDao.Object, mMockHashProvider.Object, null!, mMockMessages.Object, mMockMapper.Object, mMockLogger.Object);
+        Action act = () => new UserController(mMockUserDao.Object, mMockHashProvider.Object, null!, mMockTokenService.Object, mMockEmailService.Object, mMockMessages.Object, mMockMapper.Object, mMockLogger.Object);
 
         // Assert
         act.Should().Throw<ArgumentNullException>().WithParameterName("passwordValidator");
@@ -79,7 +91,7 @@ public class UserControllerTests
     public void Constructor_WithNullMessages_ThrowsArgumentNullException()
     {
         // Act
-        Action act = () => new UserController(mMockUserDao.Object, mMockHashProvider.Object, mMockPasswordValidator.Object, null!, mMockMapper.Object, mMockLogger.Object);
+        Action act = () => new UserController(mMockUserDao.Object, mMockHashProvider.Object, mMockPasswordValidator.Object, mMockTokenService.Object, mMockEmailService.Object, null!, mMockMapper.Object, mMockLogger.Object);
 
         // Assert
         act.Should().Throw<ArgumentNullException>().WithParameterName("messages");
@@ -89,7 +101,7 @@ public class UserControllerTests
     public void Constructor_WithNullMapper_ThrowsArgumentNullException()
     {
         // Act
-        Action act = () => new UserController(mMockUserDao.Object, mMockHashProvider.Object, mMockPasswordValidator.Object, mMockMessages.Object, null!, mMockLogger.Object);
+        Action act = () => new UserController(mMockUserDao.Object, mMockHashProvider.Object, mMockPasswordValidator.Object, mMockTokenService.Object, mMockEmailService.Object, mMockMessages.Object, null!, mMockLogger.Object);
 
         // Assert
         act.Should().Throw<ArgumentNullException>().WithParameterName("mapper");
@@ -99,14 +111,14 @@ public class UserControllerTests
     public void Constructor_WithNullLogger_ThrowsArgumentNullException()
     {
         // Act
-        Action act = () => new UserController(mMockUserDao.Object, mMockHashProvider.Object, mMockPasswordValidator.Object, mMockMessages.Object, mMockMapper.Object, null!);
+        Action act = () => new UserController(mMockUserDao.Object, mMockHashProvider.Object, mMockPasswordValidator.Object, mMockTokenService.Object, mMockEmailService.Object, mMockMessages.Object, mMockMapper.Object, null!);
 
         // Assert
         act.Should().Throw<ArgumentNullException>().WithParameterName("logger");
     }
 
     [Fact]
-    public void RegisterUser_WithValidData_ReturnsUserId()
+    public async Task RegisterUser_WithValidData_ReturnsTrue()
     {
         // Arrange
         string email = "test@example.com";
@@ -114,32 +126,35 @@ public class UserControllerTests
         mMockPasswordValidator.Setup(v => v.ValidatePassword(password, out It.Ref<List<string>>.IsAny)).Returns(true);
         mMockUserDao.Setup(d => d.IsEmailUsed(email, It.IsAny<int?>())).Returns(false);
         mMockHashProvider.Setup(h => h.ComputeHash(password)).Returns("hashedpassword");
+        mMockTokenService.Setup(t => t.GenerateToken(email)).Returns("123456");
         mMockUserDao.Setup(d => d.SaveUser(It.IsAny<Entities.User>()))
             .Callback<Entities.User>(u => u.Id = 123);
 
         // Act
-        int userId = mController.RegisterUser(email, password);
+        bool result = await mController.RegisterUser(email, password);
 
         // Assert
-        userId.Should().Be(123);
+        result.Should().BeTrue();
         mMockUserDao.Verify(d => d.SaveUser(It.Is<Entities.User>(u =>
             u.Email == email &&
             u.PasswordHash == "hashedpassword" &&
-            u.Role == "user" &&
-            u.ActiveUser == true)), Times.Once);
+            u.ActiveUser == false &&
+            u.Role == "user")), Times.Once);
+        mMockTokenService.Verify(t => t.GenerateToken(email), Times.Once);
+        mMockEmailService.Verify(e => e.SendEmailAndTriggerProcessorAsync(It.IsAny<Gehtsoft.FourCDesigner.Logic.Email.Model.EmailMessage>(), It.IsAny<CancellationToken>()), Times.Once);
     }
 
     [Theory]
     [InlineData(null)]
     [InlineData("")]
     [InlineData("   ")]
-    public void RegisterUser_WithInvalidEmail_ThrowsValidationException(string email)
+    public async Task RegisterUser_WithInvalidEmail_ThrowsValidationException(string email)
     {
         // Act
-        Action act = () => mController.RegisterUser(email, "ValidPass123");
+        Func<Task> act = async () => await mController.RegisterUser(email, "ValidPass123");
 
         // Assert
-        var exception = act.Should().Throw<ValidationException>().Which;
+        var exception = (await act.Should().ThrowAsync<ValidationException>()).Which;
         exception.Errors.Should().ContainSingle(e => e.Field == "email");
     }
 
@@ -147,18 +162,18 @@ public class UserControllerTests
     [InlineData(null)]
     [InlineData("")]
     [InlineData("   ")]
-    public void RegisterUser_WithInvalidPassword_ThrowsValidationException(string password)
+    public async Task RegisterUser_WithInvalidPassword_ThrowsValidationException(string password)
     {
         // Act
-        Action act = () => mController.RegisterUser("test@example.com", password);
+        Func<Task> act = async () => await mController.RegisterUser("test@example.com", password);
 
         // Assert
-        var exception = act.Should().Throw<ValidationException>().Which;
+        var exception = (await act.Should().ThrowAsync<ValidationException>()).Which;
         exception.Errors.Should().ContainSingle(e => e.Field == "password");
     }
 
     [Fact]
-    public void RegisterUser_WithInvalidPasswordRules_ThrowsValidationException()
+    public async Task RegisterUser_WithInvalidPasswordRules_ThrowsValidationException()
     {
         // Arrange
         string email = "test@example.com";
@@ -167,16 +182,16 @@ public class UserControllerTests
         mMockPasswordValidator.Setup(v => v.ValidatePassword(password, out errors)).Returns(false);
 
         // Act
-        Action act = () => mController.RegisterUser(email, password);
+        Func<Task> act = async () => await mController.RegisterUser(email, password);
 
         // Assert
-        var exception = act.Should().Throw<ValidationException>().Which;
+        var exception = (await act.Should().ThrowAsync<ValidationException>()).Which;
         exception.Errors.Should().ContainSingle(e => e.Field == "password");
         exception.Errors.First(e => e.Field == "password").Messages.Should().Contain("Password too weak");
     }
 
     [Fact]
-    public void RegisterUser_WithExistingEmail_ThrowsValidationException()
+    public async Task RegisterUser_WithExistingEmail_ThrowsValidationException()
     {
         // Arrange
         string email = "existing@example.com";
@@ -185,10 +200,10 @@ public class UserControllerTests
         mMockUserDao.Setup(d => d.IsEmailUsed(email, It.IsAny<int?>())).Returns(true);
 
         // Act
-        Action act = () => mController.RegisterUser(email, password);
+        Func<Task> act = async () => await mController.RegisterUser(email, password);
 
         // Assert
-        var exception = act.Should().Throw<ValidationException>().Which;
+        var exception = (await act.Should().ThrowAsync<ValidationException>()).Which;
         exception.Errors.Should().ContainSingle(e => e.Field == "email");
         exception.Errors.First(e => e.Field == "email").Messages.First().Should().Contain(email);
     }
@@ -348,13 +363,16 @@ public class UserControllerTests
     {
         // Arrange
         string email = "test@example.com";
+        string token = "123456";
+        mMockTokenService.Setup(t => t.ValidateToken(token, email, true)).Returns(true);
         mMockUserDao.Setup(d => d.ActivateUserByEmail(email)).Returns(true);
 
         // Act
-        bool result = mController.ActivateUser(email);
+        bool result = mController.ActivateUser(email, token);
 
         // Assert
         result.Should().BeTrue();
+        mMockTokenService.Verify(t => t.ValidateToken(token, email, true), Times.Once);
         mMockUserDao.Verify(d => d.ActivateUserByEmail(email), Times.Once);
     }
 
@@ -363,10 +381,12 @@ public class UserControllerTests
     {
         // Arrange
         string email = "notfound@example.com";
+        string token = "123456";
+        mMockTokenService.Setup(t => t.ValidateToken(token, email, true)).Returns(true);
         mMockUserDao.Setup(d => d.ActivateUserByEmail(email)).Returns(false);
 
         // Act
-        Action act = () => mController.ActivateUser(email);
+        Action act = () => mController.ActivateUser(email, token);
 
         // Assert
         var exception = act.Should().Throw<ValidationException>().Which;

@@ -6,10 +6,10 @@ namespace Gehtsoft.FourCDesigner.Dao;
 public interface IHashProvider
 {
     /// <summary>
-    /// Computes the SHA256 hash of the specified password.
+    /// Computes the SHA512 hash of the specified password with salt.
     /// </summary>
     /// <param name="password">The password to hash.</param>
-    /// <returns>The hexadecimal string representation of the SHA256 hash.</returns>
+    /// <returns>The Base64 string representation of the SHA512 hash.</returns>
     string ComputeHash(string password);
 
     /// <summary>

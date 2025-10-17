@@ -26,4 +26,20 @@ public class DbConfiguration : IDbConfiguration
     public string ConnectionString =>
         mConfiguration["db:connectionString"] ??
         throw new InvalidOperationException("Database connection string not configured. Set 'db:connectionString' in appsettings.json");
+
+    /// <inheritdoc/>
+    public bool CreateTestUser
+    {
+        get
+        {
+            string value = mConfiguration["db:createTestUser"];
+            if (string.IsNullOrEmpty(value))
+                return false;
+
+            if (!bool.TryParse(value, out bool result))
+                throw new InvalidOperationException($"Invalid value for 'db:createTestUser': {value}. Expected 'true' or 'false'.");
+
+            return result;
+        }
+    }
 }

@@ -17,8 +17,8 @@ public static class MessagesServiceExtensions
         // Register factory as singleton
         services.AddSingleton<IMessagesFactory, MessagesFactory>();
 
-        // Register default IMessages as scoped (can be overridden per request based on user preferences)
-        services.AddScoped<IMessages>(provider =>
+        // Register default IMessages as singleton (stateless and thread-safe)
+        services.AddSingleton<IMessages>(provider =>
         {
             var factory = provider.GetRequiredService<IMessagesFactory>();
             return factory.GetDefaultMessages();
