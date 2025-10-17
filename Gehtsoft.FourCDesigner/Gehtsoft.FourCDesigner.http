@@ -1,0 +1,6 @@
+@Gehtsoft.FourCDesigner_HostAddress = http://localhost:5237
+
+GET {{Gehtsoft.FourCDesigner_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
