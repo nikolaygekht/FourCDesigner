@@ -1,5 +1,6 @@
 using AutoMapper;
 using FluentAssertions;
+using Gehtsoft.FourCDesigner.Logic.Config;
 using Gehtsoft.FourCDesigner.Dao;
 using Gehtsoft.FourCDesigner.Entities;
 using Gehtsoft.FourCDesigner.Logic.Email;
@@ -20,6 +21,7 @@ public class UserControllerTokenTests
     private readonly Mock<IPasswordValidator> mMockPasswordValidator;
     private readonly Mock<ITokenService> mMockTokenService;
     private readonly Mock<IEmailService> mMockEmailService;
+    private readonly Mock<IUrlBuilder> mMockUrlBuilder;
     private readonly Mock<IMessages> mMockMessages;
     private readonly Mock<IMapper> mMockMapper;
     private readonly Mock<ILogger<UserController>> mMockLogger;
@@ -32,6 +34,7 @@ public class UserControllerTokenTests
         mMockPasswordValidator = new Mock<IPasswordValidator>();
         mMockTokenService = new Mock<ITokenService>();
         mMockEmailService = new Mock<IEmailService>();
+        mMockUrlBuilder = new Mock<IUrlBuilder>();
         mMockMessages = new Mock<IMessages>();
         mMockMapper = new Mock<IMapper>();
         mMockLogger = new Mock<ILogger<UserController>>();
@@ -41,11 +44,13 @@ public class UserControllerTokenTests
         mMockMessages.Setup(m => m.PasswordCannotBeEmpty).Returns("Password cannot be empty");
         mMockMessages.Setup(m => m.UserNotFound(It.IsAny<string>())).Returns((string email) => $"User with email '{email}' not found");
         mMockMessages.Setup(m => m.ActivationEmailSubject).Returns("Activate Your Account");
-        mMockMessages.Setup(m => m.ActivationEmailBody(It.IsAny<string>(), It.IsAny<double>()))
-            .Returns((string token, double exp) => $"Activation code: {token}");
+        mMockMessages.Setup(m => m.ActivationEmailBodyWithLink(It.IsAny<string>(), It.IsAny<double>()))
+            .Returns((string url, double exp) => $"Activation link: {url}");
         mMockMessages.Setup(m => m.PasswordResetEmailSubject).Returns("Password Reset");
-        mMockMessages.Setup(m => m.PasswordResetEmailBody(It.IsAny<string>(), It.IsAny<double>()))
-            .Returns((string token, double exp) => $"Reset code: {token}");
+        mMockMessages.Setup(m => m.PasswordResetEmailBodyWithLink(It.IsAny<string>(), It.IsAny<double>()))
+            .Returns((string url, double exp) => $"Reset link: {url}");
+        mMockUrlBuilder.Setup(u => u.BuildUrl(It.IsAny<string>(), It.IsAny<object>()))
+            .Returns((string path, object query) => $"https://example.com{path}");
 
         // Setup token service defaults
         mMockTokenService.Setup(t => t.ExpirationInSeconds).Returns(300.0);
@@ -56,6 +61,7 @@ public class UserControllerTokenTests
             mMockPasswordValidator.Object,
             mMockTokenService.Object,
             mMockEmailService.Object,
+            mMockUrlBuilder.Object,
             mMockMessages.Object,
             mMockMapper.Object,
             mMockLogger.Object);
@@ -73,6 +79,7 @@ public class UserControllerTokenTests
             mMockPasswordValidator.Object,
             null!,
             mMockEmailService.Object,
+            mMockUrlBuilder.Object,
             mMockMessages.Object,
             mMockMapper.Object,
             mMockLogger.Object);
@@ -91,6 +98,7 @@ public class UserControllerTokenTests
             mMockPasswordValidator.Object,
             mMockTokenService.Object,
             null!,
+            mMockUrlBuilder.Object,
             mMockMessages.Object,
             mMockMapper.Object,
             mMockLogger.Object);

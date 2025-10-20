@@ -1,9 +1,13 @@
+using Gehtsoft.FourCDesigner.Logic.Config;
 using Gehtsoft.FourCDesigner.Controllers.Data;
 using Gehtsoft.FourCDesigner.Logic;
+using Gehtsoft.FourCDesigner.Logic.Email.Configuration;
 using Gehtsoft.FourCDesigner.Logic.Session;
 using Gehtsoft.FourCDesigner.Logic.User;
+using Gehtsoft.FourCDesigner.Middleware.Throttling;
 using Gehtsoft.FourCDesigner.Utils;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 
 namespace Gehtsoft.FourCDesigner.Controllers;
 
@@ -16,6 +20,8 @@ public class UserApiController : ControllerBase
 {
     private readonly ISessionController mSessionController;
     private readonly IUserController mUserController;
+    private readonly IUserConfiguration mUserConfiguration;
+    private readonly IEmailConfiguration mEmailConfiguration;
     private readonly ILogger<UserApiController> mLogger;
 
     /// <summary>
@@ -23,15 +29,21 @@ public class UserApiController : ControllerBase
     /// </summary>
     /// <param name="sessionController">The session controller.</param>
     /// <param name="userController">The user controller.</param>
+    /// <param name="userConfiguration">The user configuration.</param>
+    /// <param name="emailConfiguration">The email configuration.</param>
     /// <param name="logger">The logger.</param>
     /// <exception cref="ArgumentNullException">Thrown when any parameter is null.</exception>
     public UserApiController(
         ISessionController sessionController,
         IUserController userController,
+        IUserConfiguration userConfiguration,
+        IEmailConfiguration emailConfiguration,
         ILogger<UserApiController> logger)
     {
         mSessionController = sessionController ?? throw new ArgumentNullException(nameof(sessionController));
         mUserController = userController ?? throw new ArgumentNullException(nameof(userController));
+        mUserConfiguration = userConfiguration ?? throw new ArgumentNullException(nameof(userConfiguration));
+        mEmailConfiguration = emailConfiguration ?? throw new ArgumentNullException(nameof(emailConfiguration));
         mLogger = logger ?? throw new ArgumentNullException(nameof(logger));
     }
 
@@ -266,7 +278,7 @@ public class UserApiController : ControllerBase
     /// <param name="token">The reset token.</param>
     /// <returns>Redirect to reset password page if valid, or login page if invalid.</returns>
     [HttpGet("request-reset-password")]
-    public IActionResult ValidateResetToken([FromQuery] string email, [FromQuery] string token)
+    public IActionResult RequestResetPassword([FromQuery] string email, [FromQuery] string token)
     {
         mLogger.LogInformation("Validating reset token for email: {Email}", email);
 
@@ -275,13 +287,47 @@ public class UserApiController : ControllerBase
         if (isValid)
         {
             mLogger.LogInformation("Reset token valid for email: {Email}, forwarding to reset password page", email);
-            // Forward to reset password page with email and token as query parameters
-            return Redirect($"/resetpassword.html?email={Uri.EscapeDataString(email)}&token={Uri.EscapeDataString(token)}");
+
+            // Set email and token in cookies for reset password page
+            Response.Cookies.Append("reset_email", email, new CookieOptions
+            {
+                HttpOnly = false,
+                Secure = true,
+                SameSite = SameSiteMode.Strict,
+                MaxAge = TimeSpan.FromMinutes(5)
+            });
+
+            Response.Cookies.Append("reset_token", token, new CookieOptions
+            {
+                HttpOnly = false,
+                Secure = true,
+                SameSite = SameSiteMode.Strict,
+                MaxAge = TimeSpan.FromMinutes(5)
+            });
+
+            return Redirect("/resetpassword.html");
         }
 
         mLogger.LogWarning("Reset token invalid or expired for email: {Email}, forwarding to login", email);
-        // Forward to login page if token is invalid
-        return Redirect("/login.html?error=invalid_token");
+
+        // Set error message in HTTP-only cookie
+        Response.Cookies.Append("login_message", "invalid_token", new CookieOptions
+        {
+            HttpOnly = false, // Must be false so JavaScript can read it
+            Secure = true,
+            SameSite = SameSiteMode.Strict,
+            MaxAge = TimeSpan.FromMinutes(5)
+        });
+
+        Response.Cookies.Append("login_message_type", "error", new CookieOptions
+        {
+            HttpOnly = false,
+            Secure = true,
+            SameSite = SameSiteMode.Strict,
+            MaxAge = TimeSpan.FromMinutes(5)
+        });
+
+        return Redirect("/login.html");
     }
 
     /// <summary>
@@ -302,16 +348,137 @@ public class UserApiController : ControllerBase
             if (success)
             {
                 mLogger.LogInformation("Account activated successfully for email: {Email}", email);
-                return Redirect("/login.html?activated=true");
+
+                // Set success message in cookie
+                Response.Cookies.Append("login_message", "account_activated", new CookieOptions
+                {
+                    HttpOnly = false, // Must be false so JavaScript can read it
+                    Secure = true,
+                    SameSite = SameSiteMode.Strict,
+                    MaxAge = TimeSpan.FromMinutes(5)
+                });
+
+                Response.Cookies.Append("login_message_type", "success", new CookieOptions
+                {
+                    HttpOnly = false,
+                    Secure = true,
+                    SameSite = SameSiteMode.Strict,
+                    MaxAge = TimeSpan.FromMinutes(5)
+                });
+
+                return Redirect("/login.html");
             }
 
             mLogger.LogWarning("Account activation failed for email: {Email} - invalid or expired token", email);
-            return Redirect("/login.html?error=invalid_activation_token");
+
+            // Set error message in cookie
+            Response.Cookies.Append("login_message", "invalid_activation_token", new CookieOptions
+            {
+                HttpOnly = false,
+                Secure = true,
+                SameSite = SameSiteMode.Strict,
+                MaxAge = TimeSpan.FromMinutes(5)
+            });
+
+            Response.Cookies.Append("login_message_type", "error", new CookieOptions
+            {
+                HttpOnly = false,
+                Secure = true,
+                SameSite = SameSiteMode.Strict,
+                MaxAge = TimeSpan.FromMinutes(5)
+            });
+
+            return Redirect("/login.html");
         }
         catch (Exception ex)
         {
             mLogger.LogError(ex, "Account activation error for email: {Email}", email);
-            return Redirect("/login.html?error=activation_failed");
+
+            // Set error message in cookie
+            Response.Cookies.Append("login_message", "activation_failed", new CookieOptions
+            {
+                HttpOnly = false,
+                Secure = true,
+                SameSite = SameSiteMode.Strict,
+                MaxAge = TimeSpan.FromMinutes(5)
+            });
+
+            Response.Cookies.Append("login_message_type", "error", new CookieOptions
+            {
+                HttpOnly = false,
+                Secure = true,
+                SameSite = SameSiteMode.Strict,
+                MaxAge = TimeSpan.FromMinutes(5)
+            });
+
+            return Redirect("/login.html");
         }
+    }
+
+    /// <summary>
+    /// Gets the password validation rules.
+    /// </summary>
+    /// <returns>Password validation rules.</returns>
+    [HttpGet("password-rules")]
+    public IActionResult GetPasswordRules()
+    {
+        mLogger.LogDebug("Getting password validation rules");
+
+        var rules = mUserConfiguration.PasswordRules;
+        var response = new PasswordRulesResponse
+        {
+            MinimumLength = rules.MinimumLength,
+            RequireCapitalLetter = rules.RequireCapitalLetter,
+            RequireSmallLetter = rules.RequireSmallLetter,
+            RequireDigit = rules.RequireDigit,
+            RequireSpecialSymbol = rules.RequireSpecialSymbol
+        };
+
+        return Ok(response);
+    }
+
+    /// <summary>
+    /// Gets the system email address configuration.
+    /// </summary>
+    /// <returns>System email configuration.</returns>
+    [HttpGet("system-email")]
+    public IActionResult GetSystemEmail()
+    {
+        mLogger.LogDebug("Getting system email address");
+
+        var response = new SystemEmailResponse
+        {
+            EmailFrom = mEmailConfiguration.MailAddressFrom
+        };
+
+        return Ok(response);
+    }
+
+    /// <summary>
+    /// Checks if an email is available for registration.
+    /// Applies stricter rate limiting to prevent email enumeration attacks.
+    /// </summary>
+    /// <param name="email">The email address to check.</param>
+    /// <returns>True if the email is available; false if taken or invalid.</returns>
+    [HttpGet("check-email")]
+    [EnableRateLimiting(ThrottlingServiceExtensions.EmailCheckThrottlePolicyName)]
+    public IActionResult CheckEmail([FromQuery] string email)
+    {
+        mLogger.LogDebug("Checking email availability");
+
+        if (string.IsNullOrWhiteSpace(email))
+        {
+            mLogger.LogWarning("Email check called with empty email");
+            return BadRequest();
+        }
+
+        bool available = mUserController.IsEmailAvailable(email);
+
+        var response = new CheckEmailResponse
+        {
+            Available = available
+        };
+
+        return Ok(response);
     }
 }

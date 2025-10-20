@@ -10,7 +10,7 @@ deploy/
 *.~*
 *.db
 logs/
-data/
+./data/
 *local*.json
 ./Docker/bin/
 ./Docker/Logs/

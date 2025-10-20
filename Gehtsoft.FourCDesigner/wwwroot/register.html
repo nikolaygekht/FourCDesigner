@@ -2,20 +2,20 @@
 <html lang="en">
 <head>
     <!--#include file="includes/head.html" -->
-    <title>Login - 4C Instructional Designer</title>
+    <title>Register - 4C Instructional Designer</title>
 </head>
 <body>
     <div class="container mt-5">
         <div class="row justify-content-center">
-            <div class="col-md-6 col-lg-4">
+            <div class="col-md-6 col-lg-5">
                 <div class="card shadow">
                     <div class="card-body">
-                        <h2 class="card-title text-center mb-4">Login</h2>
+                        <h2 class="card-title text-center mb-4">Register</h2>
                         <p class="text-center text-muted mb-4">4C Instructional Designer</p>
 
-                        <div id="error-message" class="alert alert-danger d-none" role="alert"></div>
+                        <div id="message" class="alert d-none" role="alert"></div>
 
-                        <form id="login-form">
+                        <form id="register-form">
                             <div class="mb-3">
                                 <label for="email" class="form-label">Email</label>
                                 <input
@@ -26,6 +26,7 @@
                                     required
                                     autocomplete="email"
                                     placeholder="Enter your email">
+                                <div id="email-error" class="invalid-feedback"></div>
                             </div>
                             <div class="mb-3">
                                 <label for="password" class="form-label">Password</label>
@@ -35,23 +36,20 @@
                                     id="password"
                                     name="password"
                                     required
-                                    autocomplete="current-password"
+                                    autocomplete="new-password"
                                     placeholder="Enter your password">
-                            </div>
-                            <div class="d-grid mb-2">
-                                <button type="submit" class="btn btn-primary" id="login-button">
-                                    Login
-                                </button>
+                                <div id="password-error" class="invalid-feedback"></div>
+                                <div id="password-rules" class="form-text mt-2"></div>
                             </div>
                             <div class="d-grid mb-3">
-                                <button type="button" class="btn btn-link" id="forgot-password-button" disabled>
-                                    Forgot Password?
+                                <button type="submit" class="btn btn-primary" id="register-button" disabled>
+                                    Register
                                 </button>
                             </div>
+                            <div class="text-center">
+                                <p class="mb-0">Already have an account? <a href="/login.html">Login here</a></p>
+                            </div>
                         </form>
-                        <div class="text-center mt-3">
-                            <p class="mb-0">Don't have an account? <a href="/register.html">Register here</a></p>
-                        </div>
                     </div>
                 </div>
             </div>
@@ -59,6 +57,6 @@
     </div>
 
     <!--#include file="includes/scripts.html" -->
-    <script src="/js/login.js?v=1.0.0"></script>
+    <script src="/js/register.js?v=1.0.0"></script>
 </body>
 </html>

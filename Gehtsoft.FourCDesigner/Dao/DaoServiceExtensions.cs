@@ -33,6 +33,7 @@ public static class DaoServiceExtensions
 
         // Register data access objects as singleton (stateless, creates connections on the fly)
         services.AddSingleton<IUserDao, UserDao>();
+        services.AddSingleton<ITestDao, TestDao>();
 
         return services;
     }

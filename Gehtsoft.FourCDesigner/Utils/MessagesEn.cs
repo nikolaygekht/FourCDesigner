@@ -67,4 +67,18 @@ public class MessagesEn : IMessages
         int minutes = (int)(expirationInSeconds / 60);
         return $"Your password reset code is: {token}\n\nThis code will expire in {minutes} minutes.\n\nIf you did not request a password reset, please ignore this email.";
     }
+
+    /// <inheritdoc/>
+    public string ActivationEmailBodyWithLink(string activationUrl, double expirationInSeconds)
+    {
+        int minutes = (int)(expirationInSeconds / 60);
+        return $"Thank you for registering!\n\nPlease click the link below to activate your account:\n\n{activationUrl}\n\nThis link will expire in {minutes} minutes.\n\nIf you did not create an account, please ignore this email.";
+    }
+
+    /// <inheritdoc/>
+    public string PasswordResetEmailBodyWithLink(string resetUrl, double expirationInSeconds)
+    {
+        int minutes = (int)(expirationInSeconds / 60);
+        return $"A password reset was requested for your account.\n\nPlease click the link below to reset your password:\n\n{resetUrl}\n\nThis link will expire in {minutes} minutes.\n\nIf you did not request a password reset, please ignore this email.";
+    }
 }

@@ -11,6 +11,7 @@ using Gehtsoft.FourCDesigner.Logic.Token;
 using Gehtsoft.FourCDesigner.Middleware;
 using Gehtsoft.FourCDesigner.Middleware.Throttling;
 using Gehtsoft.FourCDesigner.Utils;
+using Gehtsoft.FourCDesigner.Logic.Config;
 
 namespace Gehtsoft.FourCDesigner
 {
@@ -43,6 +44,9 @@ namespace Gehtsoft.FourCDesigner
             services.AddSingleton<IConfiguration>(Configuration);
             services.AddSingleton<IWebHostEnvironment>(CurrentEnvironment);
 
+            // Register system configuration
+            services.AddSystemConfig();
+
             // Register message services (localization)
             services.AddMessages();
 
@@ -67,8 +71,15 @@ namespace Gehtsoft.FourCDesigner
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-        public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
+        public void Configure(IApplicationBuilder app, IWebHostEnvironment env, ISystemConfig systemConfig)
         {
+            // Configure path base for reverse proxy scenarios (e.g., nginx with /4c prefix)
+            // This must be first in the pipeline to properly handle the path base
+            if (!string.IsNullOrEmpty(systemConfig.ExternalPrefix))
+            {
+                app.UsePathBase(systemConfig.ExternalPrefix);
+            }
+
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
@@ -78,10 +89,10 @@ namespace Gehtsoft.FourCDesigner
             else
             {
                 app.UseExceptionHandler("/error");
-                app.UseHsts();
             }
 
-            app.UseHttpsRedirection();
+            // Note: HTTPS redirection and HSTS are disabled because this application
+            // is designed to run behind a reverse proxy (nginx) that handles HTTPS termination
 
             // Security headers
             app.Use(async (context, next) =>

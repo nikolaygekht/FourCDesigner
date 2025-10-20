@@ -69,4 +69,10 @@ public interface IEmailConfiguration
     /// Gets the delay between sending messages in seconds.
     /// </summary>
     double DelayBetweenMessagesSeconds { get; }
+
+    /// <summary>
+    /// Gets a value indicating whether email sending is disabled.
+    /// When true, emails are queued but not sent (useful for development/testing).
+    /// </summary>
+    bool DisableSending { get; }
 }

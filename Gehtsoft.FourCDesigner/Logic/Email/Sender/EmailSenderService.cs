@@ -56,6 +56,29 @@ public class EmailSenderService : IEmailSenderService
 
         try
         {
+            // Check if sending is disabled
+            if (mConfiguration.DisableSending)
+            {
+                mLogger.LogDebug("Email: Email sending is disabled. Messages remain in queue.");
+                return;
+            }
+
+            // Check if we're paused due to a critical error (e.g., auth failure)
+            if (mSenderState.PauseAfterErrorUntil.HasValue &&
+                DateTime.UtcNow < mSenderState.PauseAfterErrorUntil.Value)
+            {
+                if (mSenderState.PauseAfterErrorUntil.Value == DateTime.MaxValue)
+                {
+                    mLogger.LogDebug("Email: Email processing is permanently disabled due to authentication failure");
+                }
+                else
+                {
+                    TimeSpan remaining = mSenderState.PauseAfterErrorUntil.Value - DateTime.UtcNow;
+                    mLogger.LogDebug("Email: Email processing is paused, resuming in {Seconds} seconds", remaining.TotalSeconds);
+                }
+                return;
+            }
+
             if (mQueue.Count == 0)
                 return;
 
@@ -83,6 +106,18 @@ public class EmailSenderService : IEmailSenderService
                     // Clear error state on success
                     mSenderState.LastError = null;
                     mSenderState.LastErrorTime = null;
+                }
+                catch (MailServerAuthFailureException ex)
+                {
+                    // Authentication failure - stop permanently to prevent account lockout
+                    mLogger.LogCritical(ex, "Email: SMTP authentication failed. Email processing stopped permanently to prevent account lockout.");
+
+                    mSenderState.LastError = ex;
+                    mSenderState.LastErrorTime = DateTime.UtcNow;
+                    // Set pause to a very long time (effectively permanent)
+                    mSenderState.PauseAfterErrorUntil = DateTime.MaxValue;
+
+                    mLogger.LogCritical("Email: Email processing has been disabled. Please check SMTP credentials and restart the application.");
                 }
                 catch (Exception ex)
                 {

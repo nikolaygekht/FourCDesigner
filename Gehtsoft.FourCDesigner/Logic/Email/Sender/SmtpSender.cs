@@ -59,10 +59,26 @@ public class SmtpSender : ISmtpSender, IDisposable
             if (!string.IsNullOrEmpty(mConfiguration.SmtpUser))
             {
                 mLogger.LogDebug("Email: Authenticating as {User}", mConfiguration.SmtpUser);
-                mClient.Authenticate(mConfiguration.SmtpUser, mConfiguration.SmtpPassword);
+                try
+                {
+                    mClient.Authenticate(mConfiguration.SmtpUser, mConfiguration.SmtpPassword);
+                }
+                catch (Exception authEx)
+                {
+                    mLogger.LogError(authEx, "Email: SMTP authentication failed for user {User}. Stopping email processing to prevent account lockout.", mConfiguration.SmtpUser);
+                    mClient?.Dispose();
+                    mClient = null;
+                    // Throw a specific exception that won't be retried
+                    throw new MailServerAuthFailureException("SMTP authentication failed. Email processing stopped to prevent account lockout.", authEx);
+                }
             }
 
             mLogger.LogInformation("Email: Connected to SMTP server");
+        }
+        catch (MailServerAuthFailureException)
+        {
+            // Re-throw authentication failures without wrapping
+            throw;
         }
         catch (Exception ex)
         {

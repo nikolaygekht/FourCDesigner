@@ -1,4 +1,5 @@
-﻿using Serilog;
+using Serilog;
+using Gehtsoft.FourCDesigner.Logic.Config;
 
 namespace Gehtsoft.FourCDesigner
 {
@@ -41,8 +42,17 @@ namespace Gehtsoft.FourCDesigner
             }
         }
 
-        public static IHostBuilder CreateHostBuilder(string[] args) =>
-            Host.CreateDefaultBuilder(args)
+        public static IHostBuilder CreateHostBuilder(string[] args)
+        {
+            // Create system config to read UseUrls setting (if configuration is available)
+            string? useUrls = null;
+            if (mConfiguration != null)
+            {
+                var systemConfig = new SystemConfig(mConfiguration);
+                useUrls = systemConfig.UseUrls;
+            }
+
+            return Host.CreateDefaultBuilder(args)
                 .ConfigureAppConfiguration((context, config) =>
                 {
                     // If mConfiguration is not initialized (e.g., in tests), skip this
@@ -52,16 +62,23 @@ namespace Gehtsoft.FourCDesigner
                         config.AddConfiguration(mConfiguration);
                     }
                 })
-                .ConfigureWebHostDefaults(webHostBuilder
-                    => webHostBuilder
-                    .UseKestrel()
-                    .UseStartup<Startup>())
+                .ConfigureWebHostDefaults(webHostBuilder =>
+                {
+                    webHostBuilder.UseKestrel();
+
+                    // Apply UseUrls only if configuration is available
+                    if (!string.IsNullOrEmpty(useUrls))
+                        webHostBuilder.UseUrls(useUrls);
+
+                    webHostBuilder.UseStartup<Startup>();
+                })
                 .UseSerilog(
                     (hostingContext, loggerConfig) =>
                         loggerConfig
                             .ReadFrom.Configuration(hostingContext.Configuration)
                             .Enrich.FromLogContext(),
                     writeToProviders: true);
+        }
 
     }
 }

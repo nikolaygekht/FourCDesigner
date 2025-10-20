@@ -16,6 +16,11 @@ namespace Gehtsoft.FourCDesigner.Middleware.Throttling
         public const string DefaultThrottlePolicyName = "DefaultThrottle";
 
         /// <summary>
+        /// Policy name for email check throttling policy (stricter to prevent enumeration).
+        /// </summary>
+        public const string EmailCheckThrottlePolicyName = "EmailCheckThrottle";
+
+        /// <summary>
         /// Header name for session ID.
         /// </summary>
         private const string SessionHeaderName = "X-fourc-session";
@@ -96,6 +101,23 @@ namespace Gehtsoft.FourCDesigner.Middleware.Throttling
                             Window = TimeSpan.FromSeconds(config.PeriodInSeconds),
                             QueueProcessingOrder = QueueProcessingOrder.OldestFirst,
                             QueueLimit = 0 // No queuing - reject immediately when limit is reached
+                        });
+                });
+
+                // Configure stricter email check policy to prevent enumeration attacks
+                options.AddPolicy(EmailCheckThrottlePolicyName, context =>
+                {
+                    // Use IP address as partition key for email checking
+                    var clientId = context.Connection.RemoteIpAddress?.ToString() ?? "unknown";
+
+                    // Stricter limits: 10 requests per 60 seconds
+                    return RateLimitPartition.GetFixedWindowLimiter(clientId, key =>
+                        new FixedWindowRateLimiterOptions
+                        {
+                            PermitLimit = 10,
+                            Window = TimeSpan.FromSeconds(60),
+                            QueueProcessingOrder = QueueProcessingOrder.OldestFirst,
+                            QueueLimit = 0
                         });
                 });
 

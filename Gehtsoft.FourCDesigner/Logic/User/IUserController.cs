@@ -89,4 +89,11 @@ public interface IUserController
     /// <returns>True if the password was reset successfully; otherwise, false.</returns>
     /// <exception cref="ArgumentException">Thrown when password is empty or doesn't meet requirements.</exception>
     bool ResetPassword(string email, string token, string newPassword);
+
+    /// <summary>
+    /// Checks if an email is available for registration.
+    /// </summary>
+    /// <param name="email">The email address to check.</param>
+    /// <returns>True if the email is available (not in use); otherwise, false.</returns>
+    bool IsEmailAvailable(string email);
 }

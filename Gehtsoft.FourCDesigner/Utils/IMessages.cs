@@ -28,6 +28,8 @@ public interface IMessages
     // Email messages
     string ActivationEmailSubject { get; }
     string ActivationEmailBody(string token, double expirationInSeconds);
+    string ActivationEmailBodyWithLink(string activationUrl, double expirationInSeconds);
     string PasswordResetEmailSubject { get; }
     string PasswordResetEmailBody(string token, double expirationInSeconds);
+    string PasswordResetEmailBodyWithLink(string resetUrl, double expirationInSeconds);
 }

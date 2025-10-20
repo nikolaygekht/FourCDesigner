@@ -137,4 +137,20 @@ public class EmailConfiguration : IEmailConfiguration
             return result;
         }
     }
+
+    /// <inheritdoc/>
+    public bool DisableSending
+    {
+        get
+        {
+            string value = mConfiguration["email:disableSending"];
+            if (string.IsNullOrEmpty(value))
+                return false; // Default: sending enabled
+
+            if (!bool.TryParse(value, out bool result))
+                throw new InvalidOperationException($"Invalid value for 'email:disableSending': {value}. Expected 'true' or 'false'.");
+
+            return result;
+        }
+    }
 }

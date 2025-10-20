@@ -1,4 +1,6 @@
+using System.Text.RegularExpressions;
 using AutoMapper;
+using Gehtsoft.FourCDesigner.Logic.Config;
 using Gehtsoft.FourCDesigner.Dao;
 using Gehtsoft.FourCDesigner.Logic.Email;
 using Gehtsoft.FourCDesigner.Logic.Email.Model;
@@ -17,6 +19,7 @@ public class UserController : IUserController
     private readonly IPasswordValidator mPasswordValidator;
     private readonly ITokenService mTokenService;
     private readonly IEmailService mEmailService;
+    private readonly IUrlBuilder mUrlBuilder;
     private readonly IMessages mMessages;
     private readonly IMapper mMapper;
     private readonly ILogger<UserController> mLogger;
@@ -29,6 +32,7 @@ public class UserController : IUserController
     /// <param name="passwordValidator">The password validator.</param>
     /// <param name="tokenService">The token service.</param>
     /// <param name="emailService">The email service.</param>
+    /// <param name="urlBuilder">The URL builder for generating external URLs.</param>
     /// <param name="messages">The localized messages provider.</param>
     /// <param name="mapper">The AutoMapper instance.</param>
     /// <param name="logger">The logger.</param>
@@ -39,6 +43,7 @@ public class UserController : IUserController
         IPasswordValidator passwordValidator,
         ITokenService tokenService,
         IEmailService emailService,
+        IUrlBuilder urlBuilder,
         IMessages messages,
         IMapper mapper,
         ILogger<UserController> logger)
@@ -48,9 +53,27 @@ public class UserController : IUserController
         mPasswordValidator = passwordValidator ?? throw new ArgumentNullException(nameof(passwordValidator));
         mTokenService = tokenService ?? throw new ArgumentNullException(nameof(tokenService));
         mEmailService = emailService ?? throw new ArgumentNullException(nameof(emailService));
+        mUrlBuilder = urlBuilder ?? throw new ArgumentNullException(nameof(urlBuilder));
         mMessages = messages ?? throw new ArgumentNullException(nameof(messages));
         mMapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
         mLogger = logger ?? throw new ArgumentNullException(nameof(logger));
+    }
+
+    /// <summary>
+    /// Validates email format according to RFC 2822 Section 3.4.
+    /// </summary>
+    /// <param name="email">The email to validate.</param>
+    /// <returns>True if email is valid; otherwise, false.</returns>
+    private static bool IsValidEmail(string email)
+    {
+        if (string.IsNullOrWhiteSpace(email))
+            return false;
+
+        // RFC 2822 Section 3.4 simplified email regex pattern
+        // This pattern validates common email formats
+        string pattern = @"^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$";
+
+        return Regex.IsMatch(email, pattern);
     }
 
     /// <summary>
@@ -65,6 +88,8 @@ public class UserController : IUserController
 
         if (string.IsNullOrWhiteSpace(email))
             errors.Add(new ValidationError("email", mMessages.EmailCannotBeEmpty));
+        else if (!IsValidEmail(email))
+            errors.Add(new ValidationError("email", "Invalid email format"));
 
         if (string.IsNullOrWhiteSpace(password))
             errors.Add(new ValidationError("password", mMessages.PasswordCannotBeEmpty));
@@ -130,11 +155,15 @@ public class UserController : IUserController
             string token = mTokenService.GenerateToken(email);
             mLogger.LogDebug("Generated activation token for user: {Email}", email);
 
+            // Build activation URL
+            string activationUrl = mUrlBuilder.BuildUrl("/activate-account", new { email, token });
+            mLogger.LogDebug("Generated activation URL for user: {Email}", email);
+
             // Send activation email and trigger immediate processing
             var emailMessage = EmailMessage.Create(
                 email,
                 mMessages.ActivationEmailSubject,
-                mMessages.ActivationEmailBody(token, mTokenService.ExpirationInSeconds),
+                mMessages.ActivationEmailBodyWithLink(activationUrl, mTokenService.ExpirationInSeconds),
                 html: false,
                 priority: true
             );
@@ -342,11 +371,15 @@ public class UserController : IUserController
             string token = mTokenService.GenerateToken(email);
             mLogger.LogDebug("Generated password reset token for user: {Email}", email);
 
+            // Build password reset URL
+            string resetUrl = mUrlBuilder.BuildUrl("/request-reset-password", new { email, token });
+            mLogger.LogDebug("Generated password reset URL for user: {Email}", email);
+
             // Send password reset email and trigger immediate processing
             var emailMessage = EmailMessage.Create(
                 email,
                 mMessages.PasswordResetEmailSubject,
-                mMessages.PasswordResetEmailBody(token, mTokenService.ExpirationInSeconds),
+                mMessages.PasswordResetEmailBodyWithLink(resetUrl, mTokenService.ExpirationInSeconds),
                 html: false,
                 priority: true
             );
@@ -426,6 +459,29 @@ public class UserController : IUserController
         {
             mLogger.LogError(ex, "Failed to reset password for user {Email}", email);
             throw;
+        }
+    }
+
+    /// <inheritdoc/>
+    public bool IsEmailAvailable(string email)
+    {
+        if (string.IsNullOrWhiteSpace(email))
+            return false;
+
+        // Validate email format first
+        if (!IsValidEmail(email))
+            return false;
+
+        try
+        {
+            // Check if email is already in use
+            bool isUsed = mUserDao.IsEmailUsed(email, null);
+            return !isUsed;
+        }
+        catch (Exception ex)
+        {
+            mLogger.LogError(ex, "Failed to check email availability for: {Email}", email);
+            return false;
         }
     }
 }
