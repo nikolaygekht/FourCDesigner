@@ -26,6 +26,7 @@ public class TestController : ControllerBase
     private readonly IUserDao mUserDao;
     private readonly IUserController mUserController;
     private readonly IThrottleCache mThrottleCache;
+    private readonly IHashProvider mHashProvider;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="TestController"/> class.
@@ -38,6 +39,7 @@ public class TestController : ControllerBase
     /// <param name="userDao">The user data access object.</param>
     /// <param name="userController">The user controller.</param>
     /// <param name="throttleCache">The throttle cache.</param>
+    /// <param name="hashProvider">The hash provider.</param>
     /// <exception cref="ArgumentNullException">Thrown when any parameter is null.</exception>
     public TestController(
         IEmailQueue emailQueue,
@@ -47,7 +49,8 @@ public class TestController : ControllerBase
         ITestDao testDao,
         IUserDao userDao,
         IUserController userController,
-        IThrottleCache throttleCache)
+        IThrottleCache throttleCache,
+        IHashProvider hashProvider)
     {
         mEmailQueue = emailQueue ?? throw new ArgumentNullException(nameof(emailQueue));
         mEmailService = emailService ?? throw new ArgumentNullException(nameof(emailService));
@@ -57,6 +60,7 @@ public class TestController : ControllerBase
         mUserDao = userDao ?? throw new ArgumentNullException(nameof(userDao));
         mUserController = userController ?? throw new ArgumentNullException(nameof(userController));
         mThrottleCache = throttleCache ?? throw new ArgumentNullException(nameof(throttleCache));
+        mHashProvider = hashProvider ?? throw new ArgumentNullException(nameof(hashProvider));
     }
 
     /// <summary>
@@ -154,13 +158,13 @@ public class TestController : ControllerBase
     }
 
     /// <summary>
-    /// Adds a test user to the database.
+    /// Adds a test user to the database directly without sending emails.
     /// Available only in Development and Testing environments.
     /// </summary>
     /// <param name="request">The user creation request.</param>
     /// <returns>The created user information.</returns>
     [HttpPost("db/add-user")]
-    public async Task<IActionResult> AddUser([FromBody] AddUserRequest request)
+    public IActionResult AddUser([FromBody] AddUserRequest request)
     {
         if (!IsAvailable())
         {
@@ -179,30 +183,34 @@ public class TestController : ControllerBase
 
         mLogger.LogInformation("Test: Adding user {Email}", request.Email);
 
-        var success = await mUserController.RegisterUser(request.Email, request.Password);
-
-        if (!success)
+        // Check if user already exists
+        var existingUser = mUserDao.GetUserByEmail(request.Email);
+        if (existingUser != null)
         {
-            mLogger.LogWarning("Test: Failed to add user {Email}", request.Email);
-            return BadRequest(new { message = "Failed to register user" });
+            mLogger.LogWarning("Test: User {Email} already exists", request.Email);
+            return BadRequest(new { message = "User already exists" });
         }
 
-        // Optionally activate the user immediately if requested
-        if (request.Activate)
+        // Create user directly without sending emails
+        var user = new Entities.User
         {
-            bool activated = mUserDao.ActivateUserByEmail(request.Email);
-            if (activated)
-            {
-                mLogger.LogInformation("Test: User {Email} activated", request.Email);
-            }
-            else
-            {
-                mLogger.LogWarning("Test: Failed to activate user {Email}", request.Email);
-            }
-        }
+            Email = request.Email,
+            PasswordHash = mHashProvider.ComputeHash(request.Password),
+            Role = "user",
+            ActiveUser = request.Activate  // Set active state based on request
+        };
 
-        mLogger.LogInformation("Test: User {Email} added successfully", request.Email);
-        return Ok(new { message = "User added successfully", email = request.Email });
+        try
+        {
+            mUserDao.SaveUser(user);
+            mLogger.LogInformation("Test: User {Email} added successfully (Active: {Active})", request.Email, request.Activate);
+            return Ok(new { message = "User added successfully", email = request.Email, active = request.Activate });
+        }
+        catch (Exception ex)
+        {
+            mLogger.LogError(ex, "Test: Failed to add user {Email}", request.Email);
+            return BadRequest(new { message = "Failed to add user", error = ex.Message });
+        }
     }
 
     /// <summary>
@@ -238,6 +246,40 @@ public class TestController : ControllerBase
             role = user.Role,
             active = user.ActiveUser
         });
+    }
+
+    /// <summary>
+    /// Requests a password reset for testing purposes.
+    /// Available only in Development and Testing environments.
+    /// Bypasses UI form and directly triggers password reset flow.
+    /// </summary>
+    /// <param name="email">The email address to request password reset for.</param>
+    /// <returns>Success message.</returns>
+    [HttpPost("request-password-reset")]
+    public async Task<IActionResult> RequestPasswordReset([FromQuery] string email)
+    {
+        if (!IsAvailable())
+        {
+            mLogger.LogWarning("Test: Attempt to access test endpoint in non-development environment");
+            return NotFound();
+        }
+
+        if (string.IsNullOrEmpty(email))
+            return BadRequest(new { message = "Email is required" });
+
+        mLogger.LogInformation("Test: Requesting password reset for {Email}", email);
+
+        try
+        {
+            await mUserController.RequestPasswordReset(email, CancellationToken.None);
+            mLogger.LogInformation("Test: Password reset requested for {Email}", email);
+            return Ok(new { message = "Password reset requested successfully", email });
+        }
+        catch (Exception ex)
+        {
+            mLogger.LogError(ex, "Test: Failed to request password reset for {Email}", email);
+            return StatusCode(500, new { message = "Failed to request password reset", error = ex.Message });
+        }
     }
 
     /// <summary>

@@ -12,8 +12,6 @@
     const resetForm = document.getElementById('reset-password-form');
     const passwordInput = document.getElementById('password');
     const resetButton = document.getElementById('reset-button');
-    const togglePasswordButton = document.getElementById('toggle-password');
-    const toggleIcon = document.getElementById('toggle-icon');
     const messageDiv = document.getElementById('message');
     const passwordError = document.getElementById('password-error');
     const passwordRulesDiv = document.getElementById('password-rules');
@@ -86,6 +84,15 @@
 
             if (!response.ok) {
                 console.error('ResetPassword: Failed to load password rules');
+                // Use default rules as fallback
+                passwordRules = {
+                    minimumLength: 8,
+                    requireCapitalLetter: true,
+                    requireSmallLetter: true,
+                    requireDigit: true,
+                    requireSpecialSymbol: false
+                };
+                displayPasswordRules();
                 return;
             }
 
@@ -94,6 +101,19 @@
             console.log('ResetPassword: Password rules loaded');
         } catch (error) {
             console.error('ResetPassword: Error loading password rules:', error);
+            // Use default rules as fallback
+            passwordRules = {
+                minimumLength: 8,
+                requireCapitalLetter: true,
+                requireSmallLetter: true,
+                requireDigit: true,
+                requireSpecialSymbol: false
+            };
+            displayPasswordRules();
+        } finally {
+            // Signal that form is fully initialized for testing
+            // This must happen after password rules are loaded and displayed
+            window.resetPasswordFormInitialized = true;
         }
     }
 
@@ -137,20 +157,6 @@
         }
     }
 
-    /**
-     * Toggles password visibility.
-     */
-    function togglePasswordVisibility() {
-        if (passwordInput.type === 'password') {
-            passwordInput.type = 'text';
-            toggleIcon.classList.remove('bi-eye');
-            toggleIcon.classList.add('bi-eye-slash');
-        } else {
-            passwordInput.type = 'password';
-            toggleIcon.classList.remove('bi-eye-slash');
-            toggleIcon.classList.add('bi-eye');
-        }
-    }
 
     /**
      * Handles the reset password form submission.
@@ -201,15 +207,12 @@
             }
 
             if (data.success) {
-                showMessage('Password reset successfully! Redirecting to login...', 'success');
-
                 // Set success cookie for login page
                 FourCApp.setCookie('login_message', 'password_reset_success', 300);
                 FourCApp.setCookie('login_message_type', 'success', 300);
 
-                setTimeout(() => {
-                    window.location.href = LOGIN_PAGE;
-                }, 2000);
+                // Redirect immediately to login page
+                window.location.href = LOGIN_PAGE;
             } else {
                 showMessage(data.message || 'Password reset failed', 'error');
             }
@@ -226,9 +229,6 @@
     // Attach event listeners
     if (resetForm)
         resetForm.addEventListener('submit', handleResetPassword);
-
-    if (togglePasswordButton)
-        togglePasswordButton.addEventListener('click', togglePasswordVisibility);
 
     if (passwordInput) {
         passwordInput.addEventListener('blur', () => {

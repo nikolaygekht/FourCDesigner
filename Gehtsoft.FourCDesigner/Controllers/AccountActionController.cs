@@ -43,6 +43,9 @@ public class AccountActionController : ControllerBase
     {
         mLogger.LogInformation("Validating reset token for email: {Email}", email);
 
+        // Secure flag only for HTTPS requests (allows HTTP in development/testing)
+        bool isHttps = Request.IsHttps;
+
         bool isValid = mUserController.ValidateToken(email, token);
 
         if (isValid)
@@ -50,10 +53,11 @@ public class AccountActionController : ControllerBase
             mLogger.LogInformation("Reset token valid for email: {Email}, forwarding to reset password page", email);
 
             // Set email and token in cookies for reset password page
+
             Response.Cookies.Append("reset_email", email, new CookieOptions
             {
                 HttpOnly = false,
-                Secure = true,
+                Secure = isHttps,
                 SameSite = SameSiteMode.Strict,
                 MaxAge = TimeSpan.FromMinutes(5)
             });
@@ -61,7 +65,7 @@ public class AccountActionController : ControllerBase
             Response.Cookies.Append("reset_token", token, new CookieOptions
             {
                 HttpOnly = false,
-                Secure = true,
+                Secure = isHttps,
                 SameSite = SameSiteMode.Strict,
                 MaxAge = TimeSpan.FromMinutes(5)
             });
@@ -71,11 +75,11 @@ public class AccountActionController : ControllerBase
 
         mLogger.LogWarning("Reset token invalid or expired for email: {Email}, forwarding to login", email);
 
-        // Set error message in HTTP-only cookie
+        // Set error message in cookie
         Response.Cookies.Append("login_message", "invalid_token", new CookieOptions
         {
             HttpOnly = false, // Must be false so JavaScript can read it
-            Secure = true,
+            Secure = isHttps,
             SameSite = SameSiteMode.Strict,
             MaxAge = TimeSpan.FromMinutes(5)
         });
@@ -83,7 +87,7 @@ public class AccountActionController : ControllerBase
         Response.Cookies.Append("login_message_type", "error", new CookieOptions
         {
             HttpOnly = false,
-            Secure = true,
+            Secure = isHttps,
             SameSite = SameSiteMode.Strict,
             MaxAge = TimeSpan.FromMinutes(5)
         });
@@ -104,6 +108,9 @@ public class AccountActionController : ControllerBase
     {
         mLogger.LogInformation("Activating account for email: {Email}", email);
 
+        // Secure flag only for HTTPS requests (allows HTTP in development/testing)
+        bool isHttps = Request.IsHttps;
+
         try
         {
             bool success = mUserController.ActivateUser(email, token);
@@ -116,7 +123,7 @@ public class AccountActionController : ControllerBase
                 Response.Cookies.Append("login_message", "account_activated", new CookieOptions
                 {
                     HttpOnly = false, // Must be false so JavaScript can read it
-                    Secure = true,
+                    Secure = isHttps,
                     SameSite = SameSiteMode.Strict,
                     MaxAge = TimeSpan.FromMinutes(5)
                 });
@@ -124,7 +131,7 @@ public class AccountActionController : ControllerBase
                 Response.Cookies.Append("login_message_type", "success", new CookieOptions
                 {
                     HttpOnly = false,
-                    Secure = true,
+                    Secure = isHttps,
                     SameSite = SameSiteMode.Strict,
                     MaxAge = TimeSpan.FromMinutes(5)
                 });
@@ -138,7 +145,7 @@ public class AccountActionController : ControllerBase
             Response.Cookies.Append("login_message", "invalid_activation_token", new CookieOptions
             {
                 HttpOnly = false,
-                Secure = true,
+                Secure = isHttps,
                 SameSite = SameSiteMode.Strict,
                 MaxAge = TimeSpan.FromMinutes(5)
             });
@@ -146,7 +153,7 @@ public class AccountActionController : ControllerBase
             Response.Cookies.Append("login_message_type", "error", new CookieOptions
             {
                 HttpOnly = false,
-                Secure = true,
+                Secure = isHttps,
                 SameSite = SameSiteMode.Strict,
                 MaxAge = TimeSpan.FromMinutes(5)
             });
@@ -161,7 +168,7 @@ public class AccountActionController : ControllerBase
             Response.Cookies.Append("login_message", "activation_failed", new CookieOptions
             {
                 HttpOnly = false,
-                Secure = true,
+                Secure = isHttps,
                 SameSite = SameSiteMode.Strict,
                 MaxAge = TimeSpan.FromMinutes(5)
             });
@@ -169,7 +176,7 @@ public class AccountActionController : ControllerBase
             Response.Cookies.Append("login_message_type", "error", new CookieOptions
             {
                 HttpOnly = false,
-                Secure = true,
+                Secure = isHttps,
                 SameSite = SameSiteMode.Strict,
                 MaxAge = TimeSpan.FromMinutes(5)
             });

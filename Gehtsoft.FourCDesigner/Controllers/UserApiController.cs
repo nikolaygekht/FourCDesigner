@@ -233,15 +233,18 @@ public class UserApiController : ControllerBase
             return BadRequest(ModelState);
         }
 
-        mLogger.LogInformation("Password reset attempt for email: {Email}", request.Email);
+        // URL-decode the email in case it was encoded in the cookie/request
+        string email = System.Web.HttpUtility.UrlDecode(request.Email);
+
+        mLogger.LogInformation("Password reset attempt for email: {Email}", email);
 
         try
         {
-            bool success = mUserController.ResetPassword(request.Email, request.Token, request.Password);
+            bool success = mUserController.ResetPassword(email, request.Token, request.Password);
 
             if (success)
             {
-                mLogger.LogInformation("Password reset successful for email: {Email}", request.Email);
+                mLogger.LogInformation("Password reset successful for email: {Email}", email);
                 return Ok(new ResetPasswordResponse
                 {
                     Success = true,
@@ -249,7 +252,7 @@ public class UserApiController : ControllerBase
                 });
             }
 
-            mLogger.LogWarning("Password reset failed for email: {Email} - invalid or expired token", request.Email);
+            mLogger.LogWarning("Password reset failed for email: {Email} - invalid or expired token", email);
             return BadRequest(new ResetPasswordResponse
             {
                 Success = false,
@@ -258,7 +261,7 @@ public class UserApiController : ControllerBase
         }
         catch (ValidationException ex)
         {
-            mLogger.LogWarning("Password reset validation failed for email: {Email}", request.Email);
+            mLogger.LogWarning("Password reset validation failed for email: {Email}", email);
 
             var errors = ex.Errors.Select(e => new FieldValidationError
             {
