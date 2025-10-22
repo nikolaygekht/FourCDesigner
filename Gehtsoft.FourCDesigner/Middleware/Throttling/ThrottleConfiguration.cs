@@ -1,42 +1,23 @@
-using Microsoft.Extensions.Configuration;
+namespace Gehtsoft.FourCDesigner.Middleware.Throttling;
 
-namespace Gehtsoft.FourCDesigner.Middleware.Throttling
+/// <summary>
+/// Implementation of throttle configuration that reads from IConfiguration.
+/// </summary>
+internal class ThrottleConfiguration : IThrottleConfiguration
 {
+    private readonly IConfiguration mConfiguration;
+
     /// <summary>
-    /// Implementation of throttle configuration that reads from IConfiguration.
-    /// Supports separate limits for authorized and non-authorized users.
+    /// Initializes a new instance of the <see cref="ThrottleConfiguration"/> class.
     /// </summary>
-    internal class ThrottleConfiguration : IThrottleConfiguration
+    /// <param name="configuration">The configuration instance.</param>
+    /// <exception cref="ArgumentNullException">Thrown when configuration is null.</exception>
+    public ThrottleConfiguration(IConfiguration configuration)
     {
-        private readonly IConfiguration _configuration;
-
-        public ThrottleConfiguration(IConfiguration configuration)
-        {
-            _configuration = configuration;
-        }
-
-        /// <inheritdoc/>
-        public bool ThrottlingEnabled =>
-            _configuration.GetValue<bool>("application:throttle:enabled", true);
-
-        /// <inheritdoc/>
-        public int DefaultRequestsPerPeriod =>
-            _configuration.GetValue<int>("application:throttle:defaultRequestsPerPeriod", 1);
-
-        /// <inheritdoc/>
-        public int CheckEmailRequestsPerPeriod =>
-            _configuration.GetValue<int>("application:throttle:checkEmailRequestsPerPeriod", 10);
-
-        /// <inheritdoc/>
-        public double PeriodInSeconds =>
-            _configuration.GetValue<double>("application:throttle:periodInSeconds", 60.0);
-
-        /// <inheritdoc/>
-        public bool AuthorizedThrottlingEnabled =>
-            _configuration.GetValue<bool>("application:throttle:authorized:enabled", false);
-
-        /// <inheritdoc/>
-        public int AuthorizedRequestsPerPeriod =>
-            _configuration.GetValue<int>("application:throttle:authorized:requestsPerPeriod", 100);
+        mConfiguration = configuration ?? throw new ArgumentNullException(nameof(configuration));
     }
+
+    /// <inheritdoc/>
+    public bool ThrottlingEnabled =>
+        mConfiguration.GetValue<bool>("system:throttle:enabled", true);
 }

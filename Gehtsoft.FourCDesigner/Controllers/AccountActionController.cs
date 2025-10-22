@@ -1,4 +1,5 @@
 using Gehtsoft.FourCDesigner.Logic.User;
+using Gehtsoft.FourCDesigner.Middleware.Throttling;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Gehtsoft.FourCDesigner.Controllers;
@@ -37,6 +38,7 @@ public class AccountActionController : ControllerBase
     /// <param name="token">The reset token.</param>
     /// <returns>Redirect to reset password page if valid, or login page if invalid.</returns>
     [HttpGet("request-reset-password")]
+    [Throttle(60000, 10, true)]
     public IActionResult RequestResetPassword([FromQuery] string email, [FromQuery] string token)
     {
         mLogger.LogInformation("Validating reset token for email: {Email}", email);
@@ -97,6 +99,7 @@ public class AccountActionController : ControllerBase
     /// <param name="token">The activation token.</param>
     /// <returns>Redirect to login page with appropriate status message.</returns>
     [HttpGet("activate-account")]
+    [Throttle(60000, 10, true)]
     public IActionResult ActivateAccount([FromQuery] string email, [FromQuery] string token)
     {
         mLogger.LogInformation("Activating account for email: {Email}", email);

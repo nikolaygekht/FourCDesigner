@@ -7,7 +7,6 @@ using Gehtsoft.FourCDesigner.Logic.User;
 using Gehtsoft.FourCDesigner.Middleware.Throttling;
 using Gehtsoft.FourCDesigner.Utils;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.RateLimiting;
 
 namespace Gehtsoft.FourCDesigner.Controllers;
 
@@ -53,7 +52,7 @@ public class UserApiController : ControllerBase
     /// <param name="request">The login request containing email and password.</param>
     /// <returns>A session ID if authentication is successful; otherwise, Unauthorized.</returns>
     [HttpPost("login")]
-    [EnableRateLimiting(ThrottlingServiceExtensions.DefaultThrottlePolicyName)]
+    [Throttle(60000, 30, true)]
     public IActionResult Login([FromBody] LoginRequest request)
     {
         // Format validation happens automatically via model validation
@@ -144,6 +143,7 @@ public class UserApiController : ControllerBase
     /// <param name="cancellationToken">The cancellation token.</param>
     /// <returns>Success status with validation errors if any.</returns>
     [HttpPost("register")]
+    [Throttle(60000, 30, true)]
     public async Task<IActionResult> RegisterUser([FromBody] RegisterUserRequest request, CancellationToken cancellationToken)
     {
         if (!ModelState.IsValid)
@@ -200,6 +200,7 @@ public class UserApiController : ControllerBase
     /// <param name="cancellationToken">The cancellation token.</param>
     /// <returns>Success status (always returns success for security).</returns>
     [HttpPost("request-password-reset")]
+    [Throttle(60000, 30, true)]
     public async Task<IActionResult> RequestPasswordReset([FromBody] RequestPasswordResetRequest request, CancellationToken cancellationToken)
     {
         if (!ModelState.IsValid)
@@ -223,6 +224,7 @@ public class UserApiController : ControllerBase
     /// <param name="request">The reset password request containing email, password, and token.</param>
     /// <returns>Success status with validation errors if any.</returns>
     [HttpPost("reset-password")]
+    [Throttle(60000, 30, true)]
     public IActionResult ResetPassword([FromBody] ResetPasswordRequest request)
     {
         if (!ModelState.IsValid)
@@ -318,7 +320,7 @@ public class UserApiController : ControllerBase
     /// <param name="email">The email address to check.</param>
     /// <returns>True if the email is available; false if taken or invalid.</returns>
     [HttpGet("check-email")]
-    [EnableRateLimiting(ThrottlingServiceExtensions.EmailCheckThrottlePolicyName)]
+    [Throttle(60000, 20, true)]
     public IActionResult CheckEmail([FromQuery] string email)
     {
         mLogger.LogDebug("Checking email availability");

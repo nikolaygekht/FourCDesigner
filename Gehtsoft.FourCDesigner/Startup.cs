@@ -111,7 +111,18 @@ namespace Gehtsoft.FourCDesigner
             {
                 context.Response.Headers["X-Content-Type-Options"] = "nosniff";
                 context.Response.Headers["X-Frame-Options"] = "DENY";
-                context.Response.Headers["Content-Security-Policy"] = "default-src 'self'";
+
+                // Relax CSP for Testing environment to allow Playwright EvaluateAsync and WaitForFunctionAsync
+                // In production, use strict CSP without unsafe-eval
+                if (env.IsEnvironment("Testing"))
+                {
+                    context.Response.Headers["Content-Security-Policy"] = "default-src 'self' 'unsafe-eval'";
+                }
+                else
+                {
+                    context.Response.Headers["Content-Security-Policy"] = "default-src 'self'";
+                }
+
                 context.Response.Headers["Strict-Transport-Security"] = "max-age=31536000";
                 await next();
             });
@@ -126,9 +137,6 @@ namespace Gehtsoft.FourCDesigner
             app.UseDefaultFiles();
             app.UseStaticFiles();
             app.UseRouting();
-
-            // Add rate limiter middleware (must be after UseRouting and before UseEndpoints)
-            app.UseRateLimiter();
 
             app.UseEndpoints(endpoints =>
             {

@@ -59,11 +59,13 @@ public class UiTestServerFixture : IAsyncLifetime
                 ["db:driver"] = "sqlite",
                 ["db:connectionString"] = connectionString,
                 ["db:createTestUser"] = "false",
-                // Throttle configuration to match production
-                ["application:throttle:enabled"] = "true",
-                ["application:throttle:defaultRequestsPerPeriod"] = "200",
-                ["application:throttle:checkEmailRequestsPerPeriod"] = "50",
-                ["application:throttle:periodInSeconds"] = "10",
+                // Routing configuration for external URLs (activation links, etc.)
+                ["system:routing:externalProtocol"] = "http",
+                ["system:routing:externalHost"] = "127.0.0.1",
+                ["system:routing:externalPort"] = "5555",
+                ["system:routing:externalPrefix"] = "",
+                // Throttle configuration
+                ["throttle:enabled"] = "true",
                 // Serilog configuration - write to file only, not console
                 ["Serilog:MinimumLevel:Default"] = "Debug",
                 ["Serilog:MinimumLevel:Override:Microsoft"] = "Warning",
@@ -131,6 +133,12 @@ public class UiTestServerFixture : IAsyncLifetime
         // Initialize database schema
         await ResetDatabaseAsync();
 
+        // Seed database with test users (once for all tests)
+        await SeedDatabaseAsync();
+
+        // Clear email queue before starting tests
+        await ClearEmailQueueAsync();
+
         // Initialize Playwright and browser (once for all tests)
         _playwright = await Microsoft.Playwright.Playwright.CreateAsync();
         _browser = await _playwright.Chromium.LaunchAsync(new Microsoft.Playwright.BrowserTypeLaunchOptions
@@ -146,6 +154,28 @@ public class UiTestServerFixture : IAsyncLifetime
     {
         var response = await HttpClient.PostAsync("/api/test/db/reset", null);
         response.EnsureSuccessStatusCode();
+    }
+
+    /// <summary>
+    /// Seeds the database with test users (called once at startup).
+    /// </summary>
+    private async Task SeedDatabaseAsync()
+    {
+        // Add test user 1 - inactive
+        await AddUserAsync("test1@test.com", "Password1!", activate: false);
+
+        // Add test user 2 - active
+        await AddUserAsync("test2@test.com", "Password2!", activate: true);
+    }
+
+    /// <summary>
+    /// Clears the email queue by dequeuing all messages.
+    /// </summary>
+    private async Task ClearEmailQueueAsync()
+    {
+        int queueSize = await GetEmailQueueSizeAsync();
+        for (int i = 0; i < queueSize; i++)
+            await DequeueEmailAsync();
     }
 
     /// <summary>
@@ -201,6 +231,16 @@ public class UiTestServerFixture : IAsyncLifetime
     /// </summary>
     public async Task DisposeAsync()
     {
+        // Clear email queue after all tests
+        try
+        {
+            await ClearEmailQueueAsync();
+        }
+        catch
+        {
+            // Ignore errors during cleanup
+        }
+
         // Dispose Playwright browser and instance
         if (_browser != null)
         {

@@ -6,8 +6,6 @@ using Gehtsoft.FourCDesigner.Logic.Email.Queue;
 using Gehtsoft.FourCDesigner.Logic.User;
 using Gehtsoft.FourCDesigner.Middleware.Throttling;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.RateLimiting;
-using Microsoft.Extensions.Options;
 
 namespace Gehtsoft.FourCDesigner.Controllers;
 
@@ -27,7 +25,7 @@ public class TestController : ControllerBase
     private readonly ITestDao mTestDao;
     private readonly IUserDao mUserDao;
     private readonly IUserController mUserController;
-    private readonly IThrottleResetService mThrottleResetService;
+    private readonly IThrottleCache mThrottleCache;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="TestController"/> class.
@@ -39,7 +37,7 @@ public class TestController : ControllerBase
     /// <param name="testDao">The test data access object.</param>
     /// <param name="userDao">The user data access object.</param>
     /// <param name="userController">The user controller.</param>
-    /// <param name="throttleResetService">The throttle reset service.</param>
+    /// <param name="throttleCache">The throttle cache.</param>
     /// <exception cref="ArgumentNullException">Thrown when any parameter is null.</exception>
     public TestController(
         IEmailQueue emailQueue,
@@ -49,7 +47,7 @@ public class TestController : ControllerBase
         ITestDao testDao,
         IUserDao userDao,
         IUserController userController,
-        IThrottleResetService throttleResetService)
+        IThrottleCache throttleCache)
     {
         mEmailQueue = emailQueue ?? throw new ArgumentNullException(nameof(emailQueue));
         mEmailService = emailService ?? throw new ArgumentNullException(nameof(emailService));
@@ -58,7 +56,7 @@ public class TestController : ControllerBase
         mTestDao = testDao ?? throw new ArgumentNullException(nameof(testDao));
         mUserDao = userDao ?? throw new ArgumentNullException(nameof(userDao));
         mUserController = userController ?? throw new ArgumentNullException(nameof(userController));
-        mThrottleResetService = throttleResetService ?? throw new ArgumentNullException(nameof(throttleResetService));
+        mThrottleCache = throttleCache ?? throw new ArgumentNullException(nameof(throttleCache));
     }
 
     /// <summary>
@@ -208,8 +206,42 @@ public class TestController : ControllerBase
     }
 
     /// <summary>
-    /// Resets throttling state by incrementing the generation counter.
-    /// This invalidates all existing rate limiter partitions by changing partition keys.
+    /// Gets user information by email address.
+    /// Available only in Development and Testing environments.
+    /// </summary>
+    /// <param name="email">The email address to look up.</param>
+    /// <returns>User information or 404 if not found.</returns>
+    [HttpGet("user")]
+    public IActionResult GetUser([FromQuery] string email)
+    {
+        if (!IsAvailable())
+        {
+            mLogger.LogWarning("Test: Attempt to access test endpoint in non-development environment");
+            return NotFound();
+        }
+
+        if (string.IsNullOrEmpty(email))
+            return BadRequest(new { message = "Email is required" });
+
+        mLogger.LogDebug("Test: Getting user: {Email}", email);
+
+        var user = mUserDao.GetUserByEmail(email);
+
+        if (user == null)
+        {
+            return NotFound(new { message = "User not found", email });
+        }
+
+        return Ok(new
+        {
+            email = user.Email,
+            role = user.Role,
+            active = user.ActiveUser
+        });
+    }
+
+    /// <summary>
+    /// Resets throttling state by clearing the entire cache.
     /// Available only in Development and Testing environments.
     /// </summary>
     /// <returns>Success message.</returns>
@@ -226,25 +258,40 @@ public class TestController : ControllerBase
 
         try
         {
-            var oldGeneration = mThrottleResetService.Generation;
-            mThrottleResetService.Reset();
-            var newGeneration = mThrottleResetService.Generation;
+            mThrottleCache.Reset();
 
-            mLogger.LogInformation("Test: Throttling state reset completed (generation {OldGen} -> {NewGen})",
-                oldGeneration, newGeneration);
+            mLogger.LogInformation("Test: Throttling state reset completed");
 
-            return Ok(new
-            {
-                message = "Throttling state reset successfully",
-                oldGeneration,
-                newGeneration
-            });
+            return Ok(new { message = "Throttling state reset successfully" });
         }
         catch (Exception ex)
         {
             mLogger.LogError(ex, "Test: Failed to reset throttling state");
             return StatusCode(500, new { message = "Failed to reset throttling state", error = ex.Message });
         }
+    }
+
+    /// <summary>
+    /// Test endpoint with short throttle limit for testing throttling functionality.
+    /// Allows only 3 requests per 5 seconds per client.
+    /// Available only in Development and Testing environments.
+    /// </summary>
+    /// <returns>Success message with request count.</returns>
+    [HttpGet("throttle-test")]
+    [Throttle(5000, 3, true)]
+    public IActionResult ThrottleTest()
+    {
+        if (!IsAvailable())
+        {
+            mLogger.LogWarning("Test: Attempt to access test endpoint in non-development environment");
+            return NotFound();
+        }
+
+        return Ok(new
+        {
+            message = "Throttle test endpoint - 3 requests per 5 seconds per client",
+            timestamp = DateTime.UtcNow
+        });
     }
 }
 

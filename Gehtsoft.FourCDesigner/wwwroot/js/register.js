@@ -186,6 +186,10 @@
                 requireSpecialSymbol: false
             };
             displayPasswordRules();
+        } finally {
+            // Signal that form is fully initialized for testing
+            // This must happen after password rules are loaded and displayed
+            window.registerFormInitialized = true;
         }
     }
 
@@ -263,7 +267,7 @@
         registerForm.addEventListener('submit', handleRegister);
 
     if (emailInput) {
-         mailInput.addEventListener('blur', async () => {
+        emailInput.addEventListener('blur', async () => {
             await validateEmailField();
             updateRegisterButton();
         });
@@ -274,6 +278,7 @@
             validatePasswordField();
             updateRegisterButton();
         });
+        
         passwordInput.addEventListener('input', () => {
             if (passwordInput.classList.contains('is-invalid') || passwordInput.classList.contains('is-valid')) {
                 validatePasswordField();
@@ -285,6 +290,4 @@
     // Initialize
     loadPasswordRules();
     console.log('Register: Page initialized');
-    // Signal that form is fully initialized for testing
-    window.registerFormInitialized = true;
 })();
