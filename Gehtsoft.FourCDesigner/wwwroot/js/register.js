@@ -19,7 +19,6 @@
     const passwordRulesDiv = document.getElementById('password-rules');
 
     let passwordRules = null;
-    let systemEmail = null;
 
     /**
      * Shows a message to the user.
@@ -147,6 +146,15 @@
 
             if (!response.ok) {
                 console.error('Register: Failed to load password rules');
+                // Use default rules as fallback
+                passwordRules = {
+                    minimumLength: 8,
+                    requireCapitalLetter: true,
+                    requireSmallLetter: true,
+                    requireDigit: true,
+                    requireSpecialSymbol: false
+                };
+                displayPasswordRules();
                 return;
             }
 
@@ -155,26 +163,15 @@
             console.log('Register: Password rules loaded');
         } catch (error) {
             console.error('Register: Error loading password rules:', error);
-        }
-    }
-
-    /**
-     * Loads system email address from the server.
-     */
-    async function loadSystemEmail() {
-        try {
-            const response = await fetch(`${API_BASE_URL}/system-email`);
-
-            if (!response.ok) {
-                console.error('Register: Failed to load system email');
-                return;
-            }
-
-            const data = await response.json();
-            systemEmail = data.emailFrom;
-            console.log('Register: System email loaded');
-        } catch (error) {
-            console.error('Register: Error loading system email:', error);
+            // Use default rules as fallback
+            passwordRules = {
+                minimumLength: 8,
+                requireCapitalLetter: true,
+                requireSmallLetter: true,
+                requireDigit: true,
+                requireSpecialSymbol: false
+            };
+            displayPasswordRules();
         }
     }
 
@@ -225,9 +222,7 @@
             }
 
             if (data.success) {
-                const emailFrom = systemEmail || 'no-reply@swiftly.bz';
-                const successMessage = `Registration complete. Please confirm your email address via email we have just sent you from ${emailFrom} email address`;
-                showMessage(successMessage, 'success');
+                showMessage('Registration complete. Please check your email to confirm your account.', 'success');
 
                 registerForm.reset();
                 emailInput.classList.remove('is-valid');
@@ -295,8 +290,10 @@
 
     // Initialize
     loadPasswordRules();
-    loadSystemEmail();
 
     console.log('Register: Page initialized');
+
+    // Signal that form is fully initialized for testing
+    window.registerFormInitialized = true;
 
 })();

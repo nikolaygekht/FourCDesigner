@@ -123,7 +123,6 @@ namespace Gehtsoft.FourCDesigner.Tests.Middleware.Throttling
             throttleConfig.PeriodInSeconds.Should().Be(1.0);
             throttleConfig.AuthorizedThrottlingEnabled.Should().BeTrue();
             throttleConfig.AuthorizedRequestsPerPeriod.Should().Be(100);
-            throttleConfig.AuthorizedPeriodInSeconds.Should().Be(2.0);
         }
 
         [Fact]
@@ -150,7 +149,6 @@ namespace Gehtsoft.FourCDesigner.Tests.Middleware.Throttling
             throttleConfig.Should().NotBeNull();
             throttleConfig!.AuthorizedThrottlingEnabled.Should().BeFalse("authorized throttling should be disabled by default");
             throttleConfig.AuthorizedRequestsPerPeriod.Should().Be(100, "should use default value");
-            throttleConfig.AuthorizedPeriodInSeconds.Should().Be(1.0, "should use default value");
         }
     }
 }

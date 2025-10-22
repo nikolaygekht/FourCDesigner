@@ -17,7 +17,12 @@
         public int DefaultRequestsPerPeriod { get; }
 
         /// <summary>
-        /// Gets the throttling period in seconds for non-authorized users.
+        /// Gets the number of email check requests allowed per period (stricter to prevent enumeration).
+        /// </summary>
+        public int CheckEmailRequestsPerPeriod { get; }
+
+        /// <summary>
+        /// Gets the throttling period in seconds shared by all policies.
         /// </summary>
         public double PeriodInSeconds { get; }
 
@@ -31,10 +36,5 @@
         /// Gets the number of requests allowed per period for authorized users.
         /// </summary>
         public int AuthorizedRequestsPerPeriod { get; }
-
-        /// <summary>
-        /// Gets the throttling period in seconds for authorized users.
-        /// </summary>
-        public double AuthorizedPeriodInSeconds { get; }
     }
 }

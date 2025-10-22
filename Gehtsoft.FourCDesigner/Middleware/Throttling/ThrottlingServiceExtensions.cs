@@ -26,6 +26,59 @@ namespace Gehtsoft.FourCDesigner.Middleware.Throttling
         private const string SessionHeaderName = "X-fourc-session";
 
         /// <summary>
+        /// Header name for client identifier.
+        /// </summary>
+        private const string ClientIdHeaderName = "X-ClientId";
+
+        /// <summary>
+        /// Extracts the client identifier from the HTTP context using a fallback chain:
+        /// 1. X-ClientId header (for mobile apps, testing)
+        /// 2. X-Forwarded-For header (for proxy/NAT scenarios)
+        /// 3. RemoteIpAddress (direct connection)
+        /// </summary>
+        /// <param name="context">The HTTP context.</param>
+        /// <returns>The client identifier string.</returns>
+        private static string GetClientIdentifier(HttpContext context)
+        {
+            // 1. Try X-ClientId header first (explicit client identification)
+            if (context.Request.Headers.TryGetValue(ClientIdHeaderName, out var clientIdValues))
+            {
+                var clientId = clientIdValues.FirstOrDefault();
+                if (!string.IsNullOrWhiteSpace(clientId))
+                {
+                    return $"client:{clientId}";
+                }
+            }
+
+            // 2. Try X-Forwarded-For header (proxy/reverse proxy scenarios)
+            // X-Forwarded-For format: "client, proxy1, proxy2"
+            // We want the original client IP (first in the chain)
+            if (context.Request.Headers.TryGetValue("X-Forwarded-For", out var forwardedForValues))
+            {
+                var forwardedFor = forwardedForValues.FirstOrDefault();
+                if (!string.IsNullOrWhiteSpace(forwardedFor))
+                {
+                    // Take the first IP in the chain (original client)
+                    var clientIp = forwardedFor.Split(',')[0].Trim();
+                    if (!string.IsNullOrWhiteSpace(clientIp))
+                    {
+                        return $"ip:{clientIp}";
+                    }
+                }
+            }
+
+            // 3. Fallback to RemoteIpAddress (direct connection)
+            var remoteIp = context.Connection.RemoteIpAddress?.ToString();
+            if (!string.IsNullOrWhiteSpace(remoteIp))
+            {
+                return $"ip:{remoteIp}";
+            }
+
+            // 4. Ultimate fallback (should rarely happen)
+            return "unknown";
+        }
+
+        /// <summary>
         /// Adds throttling services to the dependency injection container.
         /// Uses ASP.NET Core's built-in rate limiting with configuration-based settings.
         /// Supports separate limits for authorized and non-authorized users.
@@ -37,6 +90,9 @@ namespace Gehtsoft.FourCDesigner.Middleware.Throttling
             // Register configuration as singleton
             services.AddSingleton<IThrottleConfiguration, ThrottleConfiguration>();
 
+            // Register reset service as singleton
+            services.AddSingleton<IThrottleResetService, ThrottleResetService>();
+
             // Add ASP.NET Core rate limiting
             services.AddRateLimiter(options =>
             {
@@ -44,9 +100,13 @@ namespace Gehtsoft.FourCDesigner.Middleware.Throttling
                 // Configuration is read dynamically per request to support hot-reload
                 options.AddPolicy(DefaultThrottlePolicyName, context =>
                 {
-                    // Get configuration and session controller from DI
+                    // Get configuration, reset service, and session controller from DI
                     var config = context.RequestServices.GetRequiredService<IThrottleConfiguration>();
+                    var resetService = context.RequestServices.GetRequiredService<IThrottleResetService>();
                     var sessionController = context.RequestServices.GetService<ISessionController>();
+
+                    // Get current reset generation to invalidate old partitions
+                    var generation = resetService.Generation;
 
                     // Check if request has a valid session
                     string? sessionId = null;
@@ -72,14 +132,16 @@ namespace Gehtsoft.FourCDesigner.Middleware.Throttling
                             return RateLimitPartition.GetNoLimiter<string>("authorized-no-limit");
                         }
 
-                        // Use email as partition key for authorized users
-                        return RateLimitPartition.GetFixedWindowLimiter(userEmail, key =>
+                        // Use email with generation as partition key for authorized users
+                        var authorizedPartitionKey = $"{userEmail}:g{generation}";
+                        return RateLimitPartition.GetFixedWindowLimiter(authorizedPartitionKey, key =>
                             new FixedWindowRateLimiterOptions
                             {
                                 PermitLimit = config.AuthorizedRequestsPerPeriod,
-                                Window = TimeSpan.FromSeconds(config.AuthorizedPeriodInSeconds),
+                                Window = TimeSpan.FromSeconds(config.PeriodInSeconds),
                                 QueueProcessingOrder = QueueProcessingOrder.OldestFirst,
-                                QueueLimit = 0
+                                QueueLimit = 0,
+                                AutoReplenishment = true // Automatically replenish permits after window expires
                             });
                     }
 
@@ -90,34 +152,49 @@ namespace Gehtsoft.FourCDesigner.Middleware.Throttling
                         return RateLimitPartition.GetNoLimiter<string>("no-limit");
                     }
 
-                    // Extract client identifier (IP address) for non-authorized users
-                    var clientId = context.Connection.RemoteIpAddress?.ToString() ?? "unknown";
+                    // Extract client identifier using fallback chain: X-ClientId → X-Forwarded-For → RemoteIpAddress
+                    var clientId = GetClientIdentifier(context);
+
+                    // Append generation to partition key to invalidate old partitions on reset
+                    var partitionKey = $"{clientId}:g{generation}";
 
                     // Use fixed window rate limiter with current configuration values
-                    return RateLimitPartition.GetFixedWindowLimiter(clientId, key =>
+                    return RateLimitPartition.GetFixedWindowLimiter(partitionKey, key =>
                         new FixedWindowRateLimiterOptions
                         {
                             PermitLimit = config.DefaultRequestsPerPeriod,
                             Window = TimeSpan.FromSeconds(config.PeriodInSeconds),
                             QueueProcessingOrder = QueueProcessingOrder.OldestFirst,
-                            QueueLimit = 0 // No queuing - reject immediately when limit is reached
+                            QueueLimit = 0, // No queuing - reject immediately when limit is reached
+                            AutoReplenishment = true // Automatically replenish permits after window expires
                         });
                 });
 
                 // Configure stricter email check policy to prevent enumeration attacks
                 options.AddPolicy(EmailCheckThrottlePolicyName, context =>
                 {
-                    // Use IP address as partition key for email checking
-                    var clientId = context.Connection.RemoteIpAddress?.ToString() ?? "unknown";
+                    // Get configuration and reset service from DI
+                    var config = context.RequestServices.GetRequiredService<IThrottleConfiguration>();
+                    var resetService = context.RequestServices.GetRequiredService<IThrottleResetService>();
 
-                    // Stricter limits: 10 requests per 60 seconds
-                    return RateLimitPartition.GetFixedWindowLimiter(clientId, key =>
+                    // Get current reset generation to invalidate old partitions
+                    var generation = resetService.Generation;
+
+                    // Extract client identifier using fallback chain: X-ClientId → X-Forwarded-For → RemoteIpAddress
+                    var clientId = GetClientIdentifier(context);
+
+                    // Append generation to partition key to invalidate old partitions on reset
+                    var partitionKey = $"{clientId}:g{generation}";
+
+                    // Use configuration-based limits
+                    return RateLimitPartition.GetFixedWindowLimiter(partitionKey, key =>
                         new FixedWindowRateLimiterOptions
                         {
-                            PermitLimit = 10,
-                            Window = TimeSpan.FromSeconds(60),
+                            PermitLimit = config.CheckEmailRequestsPerPeriod,
+                            Window = TimeSpan.FromSeconds(config.PeriodInSeconds),
                             QueueProcessingOrder = QueueProcessingOrder.OldestFirst,
-                            QueueLimit = 0
+                            QueueLimit = 0,
+                            AutoReplenishment = true // Automatically replenish permits after window expires
                         });
                 });
 
@@ -145,7 +222,8 @@ namespace Gehtsoft.FourCDesigner.Middleware.Throttling
             {
                 options.AddPolicy(policyName, context =>
                 {
-                    var clientId = context.Connection.RemoteIpAddress?.ToString() ?? "unknown";
+                    // Extract client identifier using fallback chain: X-ClientId → X-Forwarded-For → RemoteIpAddress
+                    var clientId = GetClientIdentifier(context);
 
                     return RateLimitPartition.GetFixedWindowLimiter(clientId, _ =>
                         new FixedWindowRateLimiterOptions

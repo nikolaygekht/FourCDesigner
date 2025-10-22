@@ -90,7 +90,7 @@ namespace Gehtsoft.FourCDesigner.Tests.Middleware.Throttling
         }
 
         [Fact]
-        public void PeriodInSeconds_ShouldDefaultToOne_WhenNotConfigured()
+        public void PeriodInSeconds_ShouldDefaultToSixty_WhenNotConfigured()
         {
             // Arrange
             var configuration = new ConfigurationBuilder().Build();
@@ -99,7 +99,39 @@ namespace Gehtsoft.FourCDesigner.Tests.Middleware.Throttling
             var throttleConfig = new ThrottleConfiguration(configuration);
 
             // Assert
-            throttleConfig.PeriodInSeconds.Should().Be(1.0);
+            throttleConfig.PeriodInSeconds.Should().Be(60.0);
+        }
+
+        [Fact]
+        public void CheckEmailRequestsPerPeriod_ShouldReadFromConfiguration()
+        {
+            // Arrange
+            var configData = new Dictionary<string, string?>
+            {
+                { "application:throttle:checkEmailRequestsPerPeriod", "5" }
+            };
+            var configuration = new ConfigurationBuilder()
+                .AddInMemoryCollection(configData)
+                .Build();
+
+            // Act
+            var throttleConfig = new ThrottleConfiguration(configuration);
+
+            // Assert
+            throttleConfig.CheckEmailRequestsPerPeriod.Should().Be(5);
+        }
+
+        [Fact]
+        public void CheckEmailRequestsPerPeriod_ShouldDefaultToTen_WhenNotConfigured()
+        {
+            // Arrange
+            var configuration = new ConfigurationBuilder().Build();
+
+            // Act
+            var throttleConfig = new ThrottleConfiguration(configuration);
+
+            // Assert
+            throttleConfig.CheckEmailRequestsPerPeriod.Should().Be(10);
         }
 
         [Fact]
@@ -110,6 +142,7 @@ namespace Gehtsoft.FourCDesigner.Tests.Middleware.Throttling
             {
                 { "application:throttle:enabled", "true" },
                 { "application:throttle:defaultRequestsPerPeriod", "1" },
+                { "application:throttle:checkEmailRequestsPerPeriod", "5" },
                 { "application:throttle:periodInSeconds", "1.0" }
             };
             var configuration = new ConfigurationBuilder()
@@ -122,6 +155,7 @@ namespace Gehtsoft.FourCDesigner.Tests.Middleware.Throttling
             // Assert
             throttleConfig.ThrottlingEnabled.Should().BeTrue();
             throttleConfig.DefaultRequestsPerPeriod.Should().Be(1);
+            throttleConfig.CheckEmailRequestsPerPeriod.Should().Be(5);
             throttleConfig.PeriodInSeconds.Should().Be(1.0);
         }
 
@@ -190,38 +224,6 @@ namespace Gehtsoft.FourCDesigner.Tests.Middleware.Throttling
         }
 
         [Fact]
-        public void AuthorizedPeriodInSeconds_ShouldReadFromConfiguration()
-        {
-            // Arrange
-            var configData = new Dictionary<string, string?>
-            {
-                { "application:throttle:authorized:periodInSeconds", "5.5" }
-            };
-            var configuration = new ConfigurationBuilder()
-                .AddInMemoryCollection(configData)
-                .Build();
-
-            // Act
-            var throttleConfig = new ThrottleConfiguration(configuration);
-
-            // Assert
-            throttleConfig.AuthorizedPeriodInSeconds.Should().Be(5.5);
-        }
-
-        [Fact]
-        public void AuthorizedPeriodInSeconds_ShouldDefaultToOne_WhenNotConfigured()
-        {
-            // Arrange
-            var configuration = new ConfigurationBuilder().Build();
-
-            // Act
-            var throttleConfig = new ThrottleConfiguration(configuration);
-
-            // Assert
-            throttleConfig.AuthorizedPeriodInSeconds.Should().Be(1.0);
-        }
-
-        [Fact]
         public void Configuration_ShouldReadAllAuthorizedSettings_WhenAllProvided()
         {
             // Arrange
@@ -229,10 +231,10 @@ namespace Gehtsoft.FourCDesigner.Tests.Middleware.Throttling
             {
                 { "application:throttle:enabled", "true" },
                 { "application:throttle:defaultRequestsPerPeriod", "10" },
+                { "application:throttle:checkEmailRequestsPerPeriod", "5" },
                 { "application:throttle:periodInSeconds", "2.0" },
                 { "application:throttle:authorized:enabled", "true" },
-                { "application:throttle:authorized:requestsPerPeriod", "200" },
-                { "application:throttle:authorized:periodInSeconds", "3.0" }
+                { "application:throttle:authorized:requestsPerPeriod", "200" }
             };
             var configuration = new ConfigurationBuilder()
                 .AddInMemoryCollection(configData)
@@ -244,10 +246,10 @@ namespace Gehtsoft.FourCDesigner.Tests.Middleware.Throttling
             // Assert
             throttleConfig.ThrottlingEnabled.Should().BeTrue();
             throttleConfig.DefaultRequestsPerPeriod.Should().Be(10);
+            throttleConfig.CheckEmailRequestsPerPeriod.Should().Be(5);
             throttleConfig.PeriodInSeconds.Should().Be(2.0);
             throttleConfig.AuthorizedThrottlingEnabled.Should().BeTrue();
             throttleConfig.AuthorizedRequestsPerPeriod.Should().Be(200);
-            throttleConfig.AuthorizedPeriodInSeconds.Should().Be(3.0);
         }
     }
 }

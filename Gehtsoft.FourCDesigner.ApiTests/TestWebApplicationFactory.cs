@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Gehtsoft.FourCDesigner.Dao;
 
 namespace Gehtsoft.FourCDesigner.ApiTests;
@@ -35,8 +36,18 @@ public class TestWebApplicationFactory : WebApplicationFactory<Program>
             {
                 ["db:driver"] = "sqlite",
                 ["db:connectionString"] = $"Data Source={mDatabaseName};Mode=Memory;Cache=Shared",
-                ["db:createTestUser"] = "true"
+                ["db:createTestUser"] = "true",
+                // Configure test log file (no console output)
+                ["Serilog:WriteTo:0:Name"] = "File",
+                ["Serilog:WriteTo:0:Args:path"] = "./logs/api-test-log.txt",
+                ["Serilog:WriteTo:0:Args:rollingInterval"] = "Day"
             });
+        });
+
+        builder.ConfigureLogging(logging =>
+        {
+            // Clear all logging providers (including console) to prevent writeToProviders from writing to console
+            logging.ClearProviders();
         });
 
         builder.ConfigureServices(services =>

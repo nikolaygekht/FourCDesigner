@@ -24,8 +24,12 @@ namespace Gehtsoft.FourCDesigner.Middleware.Throttling
             _configuration.GetValue<int>("application:throttle:defaultRequestsPerPeriod", 1);
 
         /// <inheritdoc/>
+        public int CheckEmailRequestsPerPeriod =>
+            _configuration.GetValue<int>("application:throttle:checkEmailRequestsPerPeriod", 10);
+
+        /// <inheritdoc/>
         public double PeriodInSeconds =>
-            _configuration.GetValue<double>("application:throttle:periodInSeconds", 1.0);
+            _configuration.GetValue<double>("application:throttle:periodInSeconds", 60.0);
 
         /// <inheritdoc/>
         public bool AuthorizedThrottlingEnabled =>
@@ -34,9 +38,5 @@ namespace Gehtsoft.FourCDesigner.Middleware.Throttling
         /// <inheritdoc/>
         public int AuthorizedRequestsPerPeriod =>
             _configuration.GetValue<int>("application:throttle:authorized:requestsPerPeriod", 100);
-
-        /// <inheritdoc/>
-        public double AuthorizedPeriodInSeconds =>
-            _configuration.GetValue<double>("application:throttle:authorized:periodInSeconds", 1.0);
     }
 }

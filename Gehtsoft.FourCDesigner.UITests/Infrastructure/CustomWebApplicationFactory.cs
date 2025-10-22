@@ -12,6 +12,9 @@ public class CustomWebApplicationFactory : WebApplicationFactory<Program>
 {
     private readonly string _databaseName;
     private IHost? _realHost;
+    private static readonly object _lock = new object();
+    private static bool _serverStarted = false;
+    private static IHost? _staticRealHost;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="CustomWebApplicationFactory"/> class.
@@ -27,40 +30,54 @@ public class CustomWebApplicationFactory : WebApplicationFactory<Program>
         // Create a test host for TestServer (required by WebApplicationFactory)
         var testHost = builder.Build();
 
-        // Create a completely new host builder for the real Kestrel server
-        var realHostBuilder = Program.CreateHostBuilder(Array.Empty<string>());
-
-        // Apply the same configuration from ConfigureWebHost
-        realHostBuilder.ConfigureWebHost(webHostBuilder =>
+        // Only start the real Kestrel server once across all instances
+        lock (_lock)
         {
-            var connectionString = $"Data Source={_databaseName};Mode=Memory;Cache=Shared";
-
-            // Set content root to the main application directory where wwwroot is located
-            var contentRoot = Path.GetFullPath(Path.Combine(
-                AppContext.BaseDirectory,
-                "..", "..", "..", "..",
-                "Gehtsoft.FourCDesigner"));
-
-            webHostBuilder.UseContentRoot(contentRoot);
-
-            webHostBuilder.ConfigureAppConfiguration((context, config) =>
+            if (!_serverStarted)
             {
-                config.AddInMemoryCollection(new Dictionary<string, string?>
+                // Create a completely new host builder for the real Kestrel server
+                var realHostBuilder = Program.CreateHostBuilder(Array.Empty<string>());
+
+                // Apply the same configuration from ConfigureWebHost
+                realHostBuilder.ConfigureWebHost(webHostBuilder =>
                 {
-                    ["email:disableSending"] = "true",
-                    ["db:driver"] = "sqlite",
-                    ["db:connectionString"] = connectionString,
-                    ["db:createTestUser"] = "false"
+                    var connectionString = $"Data Source={_databaseName};Mode=Memory;Cache=Shared";
+
+                    // Set content root to the main application directory where wwwroot is located
+                    var contentRoot = Path.GetFullPath(Path.Combine(
+                        AppContext.BaseDirectory,
+                        "..", "..", "..", "..",
+                        "Gehtsoft.FourCDesigner"));
+
+                    webHostBuilder.UseContentRoot(contentRoot);
+
+                    webHostBuilder.ConfigureAppConfiguration((context, config) =>
+                    {
+                        config.AddInMemoryCollection(new Dictionary<string, string?>
+                        {
+                            ["email:disableSending"] = "true",
+                            ["db:driver"] = "sqlite",
+                            ["db:connectionString"] = connectionString,
+                            ["db:createTestUser"] = "false",
+                            // Configure test log file
+                            ["Serilog:WriteTo:0:Name"] = "File",
+                            ["Serilog:WriteTo:0:Args:path"] = "./logs/test-log.txt",
+                            ["Serilog:WriteTo:0:Args:rollingInterval"] = "Day"
+                        });
+                    });
+
+                    webHostBuilder.UseEnvironment("Testing");
+                    webHostBuilder.UseKestrel();
+                    webHostBuilder.UseUrls("http://127.0.0.1:5555");
                 });
-            });
 
-            webHostBuilder.UseEnvironment("Testing");
-            webHostBuilder.UseKestrel();
-            webHostBuilder.UseUrls("http://127.0.0.1:5555");
-        });
+                _staticRealHost = realHostBuilder.Build();
+                _staticRealHost.Start();
+                _serverStarted = true;
+            }
 
-        _realHost = realHostBuilder.Build();
-        _realHost.Start();
+            _realHost = _staticRealHost;
+        }
 
         // Return the test host (WebApplicationFactory expects this)
         return testHost;
@@ -79,7 +96,11 @@ public class CustomWebApplicationFactory : WebApplicationFactory<Program>
                 ["email:disableSending"] = "true",
                 ["db:driver"] = "sqlite",
                 ["db:connectionString"] = connectionString,
-                ["db:createTestUser"] = "false" // Don't create test user in UI tests
+                ["db:createTestUser"] = "false", // Don't create test user in UI tests
+                // Configure test log file
+                ["Serilog:WriteTo:0:Name"] = "File",
+                ["Serilog:WriteTo:0:Args:path"] = "./logs/test-log.txt",
+                ["Serilog:WriteTo:0:Args:rollingInterval"] = "Day"
             });
         });
 

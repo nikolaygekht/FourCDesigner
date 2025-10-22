@@ -1,9 +1,15 @@
 TBD:
-* Refactor UX test to start server just once using Fixture approach
-* Create UX test for
-  * Moving back to login from index when session expired 
-  * Login: data validation, good user, bad user (non exisitng, inactive)
-  * Registration: data validation, sending email, activation
-  * Password reset: sending email, data validation, correct change of password
+* Resolve why tests doesn't work again: playwright slow and breaks at actions like ClickButton
+* Add reset password tests
+* Replace automapper
+* Email копятся почему-то при выполнении тестов
+* index is not a default page
+* Email пишет лог в консоль
+* В письмах кривые URL без префикса
+* Ручками регистрация до конца не работает - активация проходин, но залогиниться нельщя
+* Ручками смена пароля не работает 
+* На смене пароля поле пароля выглядит уебански
+
+
 
 

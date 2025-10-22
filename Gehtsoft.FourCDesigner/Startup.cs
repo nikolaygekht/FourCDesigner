@@ -73,6 +73,19 @@ namespace Gehtsoft.FourCDesigner
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env, ISystemConfig systemConfig)
         {
+            // Configure forwarded headers for proxy scenarios (must be early in pipeline)
+            // This allows X-Forwarded-For and X-Forwarded-Proto headers to be read properly
+            var forwardedHeadersOptions = new Microsoft.AspNetCore.Builder.ForwardedHeadersOptions
+            {
+                ForwardedHeaders = Microsoft.AspNetCore.HttpOverrides.ForwardedHeaders.XForwardedFor |
+                                   Microsoft.AspNetCore.HttpOverrides.ForwardedHeaders.XForwardedProto
+            };
+            // Allow any proxy (for development and testing)
+            // In production, you should configure specific known networks/proxies
+            forwardedHeadersOptions.KnownNetworks.Clear();
+            forwardedHeadersOptions.KnownProxies.Clear();
+            app.UseForwardedHeaders(forwardedHeadersOptions);
+
             // Configure path base for reverse proxy scenarios (e.g., nginx with /4c prefix)
             // This must be first in the pipeline to properly handle the path base
             if (!string.IsNullOrEmpty(systemConfig.ExternalPrefix))

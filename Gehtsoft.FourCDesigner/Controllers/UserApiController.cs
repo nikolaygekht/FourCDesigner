@@ -53,6 +53,7 @@ public class UserApiController : ControllerBase
     /// <param name="request">The login request containing email and password.</param>
     /// <returns>A session ID if authentication is successful; otherwise, Unauthorized.</returns>
     [HttpPost("login")]
+    [EnableRateLimiting(ThrottlingServiceExtensions.DefaultThrottlePolicyName)]
     public IActionResult Login([FromBody] LoginRequest request)
     {
         // Format validation happens automatically via model validation

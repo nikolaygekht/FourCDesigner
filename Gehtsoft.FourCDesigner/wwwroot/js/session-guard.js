@@ -17,10 +17,13 @@
     const API_BASE_URL = '/api/user';
     const LOGIN_PAGE = '/login.html';
 
-    // Skip session validation on login page
+    // Skip session validation on public pages (login, register, reset password)
     const currentPage = window.location.pathname;
-    if (currentPage.endsWith('login.html') || currentPage.endsWith('login')) {
-        console.log('Session guard: Skipping validation on login page');
+    const publicPages = ['login.html', 'login', 'register.html', 'register', 'resetpassword.html', 'resetpassword'];
+    const isPublicPage = publicPages.some(page => currentPage.endsWith(page));
+
+    if (isPublicPage) {
+        console.log('Session guard: Skipping validation on public page:', currentPage);
         return;
     }
 
