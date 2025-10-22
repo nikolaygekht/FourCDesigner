@@ -35,7 +35,7 @@ public interface IEmailService
     /// <summary>
     /// Gets the last error that occurred during sending.
     /// </summary>
-    Exception LastError { get; }
+    Exception? LastError { get; }
 
     /// <summary>
     /// Gets the date and time of the last error.

@@ -80,7 +80,7 @@ public class EmailService : IEmailService
     public bool IsSenderActive => mSenderState.IsSenderActive;
 
     /// <inheritdoc/>
-    public Exception LastError => mSenderState.LastError;
+    public Exception? LastError => mSenderState.LastError;
 
     /// <inheritdoc/>
     public DateTime? LastErrorTime => mSenderState.LastErrorTime;

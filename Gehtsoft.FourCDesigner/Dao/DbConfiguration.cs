@@ -32,7 +32,7 @@ public class DbConfiguration : IDbConfiguration
     {
         get
         {
-            string value = mConfiguration["db:createTestUser"];
+            string? value = mConfiguration["db:createTestUser"];
             if (string.IsNullOrEmpty(value))
                 return false;
 

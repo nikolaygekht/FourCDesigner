@@ -30,7 +30,6 @@ namespace Gehtsoft.FourCDesigner
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddControllers();
-            services.AddAutoMapper(cfg => { }, typeof(Startup));
             services.AddCors(options =>
             {
                 options.AddPolicy("AllowFrontend", policy =>
@@ -122,6 +121,9 @@ namespace Gehtsoft.FourCDesigner
             // Add SSI middleware (must be before UseStaticFiles)
             app.UseMiddleware<SsiMiddleware>();
 
+            // Enable default files (index.html) before static files
+            // This allows the root URL to serve index.html by default
+            app.UseDefaultFiles();
             app.UseStaticFiles();
             app.UseRouting();
 

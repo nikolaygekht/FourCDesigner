@@ -231,8 +231,6 @@ public void ConfigureServices(IServiceCollection services)
     // Register validators
     services.AddScoped<IUserValidator, UserValidator>();
 
-    // Configure AutoMapper
-    services.AddAutoMapper(typeof(Program));
 }
 ```
 
@@ -535,7 +533,6 @@ var builder = WebApplication.CreateBuilder(args);
 
 // Add services
 builder.Services.AddControllers();
-builder.Services.AddAutoMapper(typeof(Program));
 
 // Configure CORS
 builder.Services.AddCors(options =>
@@ -602,10 +599,9 @@ app.Run();
 API Controllers/Endpoints must be thin and only:
 1. Deserialize JSON to DTOs
 2. Validate request format (via model validation attributes)
-3. Map DTOs to entities using AutoMapper
-4. Call ECB Controllers for business logic
-5. Map results back to DTOs
-6. Serialize response to JSON
+3. Call ECB Controllers for business logic
+4. Map results back to DTOs
+5. Serialize response to JSON
 
 **Logical/business validation** must be done via separate Validator classes, not in endpoints.
 

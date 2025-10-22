@@ -341,8 +341,8 @@ public class EmailSenderServiceTests
 
         var messages = new Queue<EmailMessage>(new[] { message1, message2, message3 });
         mQueueMock.Setup(q => q.Count).Returns(3);
-        mQueueMock.Setup(q => q.TryDequeue(out It.Ref<EmailMessage>.IsAny))
-            .Returns(new TryDequeueDelegate((out EmailMessage msg) =>
+        mQueueMock.Setup(q => q.TryDequeue(out It.Ref<EmailMessage?>.IsAny))
+            .Returns(new TryDequeueDelegate((out EmailMessage? msg) =>
             {
                 if (messages.Count > 0)
                 {
@@ -400,7 +400,7 @@ public class EmailSenderServiceTests
     }
 
     // Delegate for TryDequeue mock
-    private delegate bool TryDequeueDelegate(out EmailMessage message);
+    private delegate bool TryDequeueDelegate(out EmailMessage? message);
 
     /// <summary>
     /// Helper method to setup TryDequeue mock for a single message.
@@ -410,8 +410,8 @@ public class EmailSenderServiceTests
     private void SetupSingleMessageDequeue(EmailMessage message)
     {
         bool dequeued = false;
-        mQueueMock.Setup(q => q.TryDequeue(out It.Ref<EmailMessage>.IsAny))
-            .Returns(new TryDequeueDelegate((out EmailMessage msg) =>
+        mQueueMock.Setup(q => q.TryDequeue(out It.Ref<EmailMessage?>.IsAny))
+            .Returns(new TryDequeueDelegate((out EmailMessage? msg) =>
             {
                 if (!dequeued)
                 {

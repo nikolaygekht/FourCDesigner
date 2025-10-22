@@ -18,7 +18,7 @@ public interface IEmailQueue
     /// </summary>
     /// <param name="message">The dequeued message, or null if queue is empty.</param>
     /// <returns>True if a message was dequeued, false if queue is empty.</returns>
-    bool TryDequeue(out EmailMessage message);
+    bool TryDequeue(out EmailMessage? message);
 
     /// <summary>
     /// Re-enqueues a message that failed to send (for retry).

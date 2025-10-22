@@ -1,4 +1,3 @@
-using AutoMapper;
 using Gehtsoft.FourCDesigner.Logic.Config;
 using Gehtsoft.FourCDesigner.Dao;
 using Gehtsoft.FourCDesigner.Entities;
@@ -23,7 +22,6 @@ public class UserControllerTests
     private readonly Mock<IEmailService> mMockEmailService;
     private readonly Mock<IUrlBuilder> mMockUrlBuilder;
     private readonly Mock<IMessages> mMockMessages;
-    private readonly Mock<IMapper> mMockMapper;
     private readonly Mock<ILogger<UserController>> mMockLogger;
     private readonly UserController mController;
 
@@ -36,7 +34,6 @@ public class UserControllerTests
         mMockEmailService = new Mock<IEmailService>();
         mMockUrlBuilder = new Mock<IUrlBuilder>();
         mMockMessages = new Mock<IMessages>();
-        mMockMapper = new Mock<IMapper>();
         mMockLogger = new Mock<ILogger<UserController>>();
 
         // Setup default message responses
@@ -61,7 +58,6 @@ public class UserControllerTests
             mMockEmailService.Object,
             mMockUrlBuilder.Object,
             mMockMessages.Object,
-            mMockMapper.Object,
             mMockLogger.Object);
     }
 
@@ -69,7 +65,7 @@ public class UserControllerTests
     public void Constructor_WithNullUserDao_ThrowsArgumentNullException()
     {
         // Act
-        Action act = () => new UserController(null!, mMockHashProvider.Object, mMockPasswordValidator.Object, mMockTokenService.Object, mMockEmailService.Object, mMockUrlBuilder.Object, mMockMessages.Object, mMockMapper.Object, mMockLogger.Object);
+        Action act = () => new UserController(null!, mMockHashProvider.Object, mMockPasswordValidator.Object, mMockTokenService.Object, mMockEmailService.Object, mMockUrlBuilder.Object, mMockMessages.Object, mMockLogger.Object);
 
         // Assert
         act.Should().Throw<ArgumentNullException>().WithParameterName("userDao");
@@ -79,7 +75,7 @@ public class UserControllerTests
     public void Constructor_WithNullHashProvider_ThrowsArgumentNullException()
     {
         // Act
-        Action act = () => new UserController(mMockUserDao.Object, null!, mMockPasswordValidator.Object, mMockTokenService.Object, mMockEmailService.Object, mMockUrlBuilder.Object, mMockMessages.Object, mMockMapper.Object, mMockLogger.Object);
+        Action act = () => new UserController(mMockUserDao.Object, null!, mMockPasswordValidator.Object, mMockTokenService.Object, mMockEmailService.Object, mMockUrlBuilder.Object, mMockMessages.Object, mMockLogger.Object);
 
         // Assert
         act.Should().Throw<ArgumentNullException>().WithParameterName("hashProvider");
@@ -89,7 +85,7 @@ public class UserControllerTests
     public void Constructor_WithNullPasswordValidator_ThrowsArgumentNullException()
     {
         // Act
-        Action act = () => new UserController(mMockUserDao.Object, mMockHashProvider.Object, null!, mMockTokenService.Object, mMockEmailService.Object, mMockUrlBuilder.Object, mMockMessages.Object, mMockMapper.Object, mMockLogger.Object);
+        Action act = () => new UserController(mMockUserDao.Object, mMockHashProvider.Object, null!, mMockTokenService.Object, mMockEmailService.Object, mMockUrlBuilder.Object, mMockMessages.Object, mMockLogger.Object);
 
         // Assert
         act.Should().Throw<ArgumentNullException>().WithParameterName("passwordValidator");
@@ -99,27 +95,17 @@ public class UserControllerTests
     public void Constructor_WithNullMessages_ThrowsArgumentNullException()
     {
         // Act
-        Action act = () => new UserController(mMockUserDao.Object, mMockHashProvider.Object, mMockPasswordValidator.Object, mMockTokenService.Object, mMockEmailService.Object, mMockUrlBuilder.Object, null!, mMockMapper.Object, mMockLogger.Object);
+        Action act = () => new UserController(mMockUserDao.Object, mMockHashProvider.Object, mMockPasswordValidator.Object, mMockTokenService.Object, mMockEmailService.Object, mMockUrlBuilder.Object, null!, mMockLogger.Object);
 
         // Assert
         act.Should().Throw<ArgumentNullException>().WithParameterName("messages");
     }
 
     [Fact]
-    public void Constructor_WithNullMapper_ThrowsArgumentNullException()
-    {
-        // Act
-        Action act = () => new UserController(mMockUserDao.Object, mMockHashProvider.Object, mMockPasswordValidator.Object, mMockTokenService.Object, mMockEmailService.Object, mMockUrlBuilder.Object, mMockMessages.Object, null!, mMockLogger.Object);
-
-        // Assert
-        act.Should().Throw<ArgumentNullException>().WithParameterName("mapper");
-    }
-
-    [Fact]
     public void Constructor_WithNullLogger_ThrowsArgumentNullException()
     {
         // Act
-        Action act = () => new UserController(mMockUserDao.Object, mMockHashProvider.Object, mMockPasswordValidator.Object, mMockTokenService.Object, mMockEmailService.Object, mMockUrlBuilder.Object, mMockMessages.Object, mMockMapper.Object, null!);
+        Action act = () => new UserController(mMockUserDao.Object, mMockHashProvider.Object, mMockPasswordValidator.Object, mMockTokenService.Object, mMockEmailService.Object, mMockUrlBuilder.Object, mMockMessages.Object, null!);
 
         // Assert
         act.Should().Throw<ArgumentNullException>().WithParameterName("logger");
@@ -227,7 +213,6 @@ public class UserControllerTests
 
         mMockUserDao.Setup(d => d.GetUserByEmail(email)).Returns(user);
         mMockHashProvider.Setup(h => h.ValidatePassword(password, "hash")).Returns(true);
-        mMockMapper.Setup(m => m.Map<UserInfo>(user)).Returns(userInfo);
 
         // Act
         UserInfo? result = mController.ValidateUser(email, password);

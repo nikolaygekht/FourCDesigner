@@ -5,7 +5,7 @@ namespace Gehtsoft.FourCDesigner
 {
     public class Program
     {
-        public static IConfiguration mConfiguration;
+        public static IConfiguration mConfiguration = null!;
         public static IConfiguration Configuration => mConfiguration;
 
         public static void Main(string[] args)
@@ -77,7 +77,7 @@ namespace Gehtsoft.FourCDesigner
                         loggerConfig
                             .ReadFrom.Configuration(hostingContext.Configuration)
                             .Enrich.FromLogContext(),
-                    writeToProviders: true);
+                    writeToProviders: false);
         }
 
     }

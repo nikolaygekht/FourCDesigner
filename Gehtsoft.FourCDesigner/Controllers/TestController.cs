@@ -87,7 +87,7 @@ public class TestController : ControllerBase
 
         mLogger.LogDebug("Test: Dequeuing email from queue");
 
-        if (mEmailQueue.TryDequeue(out EmailMessage message))
+        if (mEmailQueue.TryDequeue(out EmailMessage? message) && message != null)
         {
             var response = new DequeueEmailResponse
             {

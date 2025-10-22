@@ -1,3 +1,5 @@
+// Suppress nullability warnings for intentional null tests
+#pragma warning disable CS8625, CS8602, CS8600, CS8601, CS8603
 using FluentAssertions;
 using Gehtsoft.FourCDesigner.Logic.Email.Model;
 using Gehtsoft.FourCDesigner.Logic.Email.Queue;

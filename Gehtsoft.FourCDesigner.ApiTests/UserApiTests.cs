@@ -1,3 +1,5 @@
+// Suppress nullability warnings for intentional null tests
+#pragma warning disable CS8625, CS8602, CS8600, CS8620
 using System.Net;
 using System.Net.Http.Json;
 using FluentAssertions;

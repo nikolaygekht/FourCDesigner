@@ -73,7 +73,7 @@ public class EmailQueue : IEmailQueue
     }
 
     /// <inheritdoc/>
-    public bool TryDequeue(out EmailMessage message)
+    public bool TryDequeue(out EmailMessage? message)
     {
         lock (mLock)
         {
@@ -139,7 +139,7 @@ public class EmailQueue : IEmailQueue
 
                 foreach (Guid id in messageIds)
                 {
-                    EmailMessage message = mStorage.ReadMessage(id);
+                    EmailMessage? message = mStorage.ReadMessage(id);
                     if (message != null)
                     {
                         if (message.Priority)

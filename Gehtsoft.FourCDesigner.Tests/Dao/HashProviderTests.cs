@@ -1,3 +1,5 @@
+// Suppress nullability warnings for intentional null tests
+#pragma warning disable CS8625, CS8602, CS8600, CS8601, CS8603
 using Gehtsoft.FourCDesigner.Dao;
 using Gehtsoft.FourCDesigner.Dao.Configuration;
 using Xunit;

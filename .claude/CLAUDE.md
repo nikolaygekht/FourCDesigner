@@ -9,6 +9,7 @@ The project platform is ASP.NET API + Thick JQuery client.
   * [Project Goal](requirements/GOAL.md)
   * [Project Problem Domain](requirements/DOMAIN.md)
   * [Architecture Approach](coding/ARCHITECTURE.md)
+    * [Generic Coding Guide](coding/CODINGGUIDE.md)
     * [.NET Coding Style Guide](coding/CODINGGUIDE_CS.md)
     * [JavaScript Coding Style Guide](coding/CODINGGUIDE_JS.md)
     * [HTML Coding Style Guide](coding/CODINGGUIDE_HTML.md)

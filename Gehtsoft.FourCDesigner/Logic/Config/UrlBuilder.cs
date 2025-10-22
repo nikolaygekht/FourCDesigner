@@ -102,7 +102,7 @@ public class UrlBuilder : IUrlBuilder
             if (value != null)
             {
                 string encodedName = HttpUtility.UrlEncode(property.Name);
-                string encodedValue = HttpUtility.UrlEncode(value.ToString());
+                string? encodedValue = HttpUtility.UrlEncode(value.ToString());
                 queryParts.Add($"{encodedName}={encodedValue}");
             }
         }

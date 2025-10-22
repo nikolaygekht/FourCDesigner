@@ -109,7 +109,7 @@ public class FileEmailStorage : IEmailStorage
     }
 
     /// <inheritdoc/>
-    public EmailMessage ReadMessage(Guid id)
+    public EmailMessage? ReadMessage(Guid id)
     {
         lock (mLock)
         {
@@ -124,7 +124,7 @@ public class FileEmailStorage : IEmailStorage
                 }
 
                 string json = File.ReadAllText(filePath);
-                EmailMessage message = JsonSerializer.Deserialize<EmailMessage>(json);
+                EmailMessage? message = JsonSerializer.Deserialize<EmailMessage>(json);
 
                 return message;
             }

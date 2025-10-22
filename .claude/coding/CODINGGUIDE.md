@@ -42,3 +42,7 @@ The docker files and scripts must be located in the subfolder `docker`.
   * See [.NET Coding Guide](CODINGGUIDE_CS.md) for C# code
   * See [JS Coding Guide](CODINGGUIDE_JS.md) for JavaScript code
   * See [HTML/CSS Coding Guide](CODINGGUIDE_HTML.md) for HTML/JavaScript code
+
+# Warnings
+
+Warnings are BAD. FIX all warnings!!!

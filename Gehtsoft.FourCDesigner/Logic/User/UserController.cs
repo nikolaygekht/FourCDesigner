@@ -1,5 +1,4 @@
 using System.Text.RegularExpressions;
-using AutoMapper;
 using Gehtsoft.FourCDesigner.Logic.Config;
 using Gehtsoft.FourCDesigner.Dao;
 using Gehtsoft.FourCDesigner.Logic.Email;
@@ -21,7 +20,6 @@ public class UserController : IUserController
     private readonly IEmailService mEmailService;
     private readonly IUrlBuilder mUrlBuilder;
     private readonly IMessages mMessages;
-    private readonly IMapper mMapper;
     private readonly ILogger<UserController> mLogger;
 
     /// <summary>
@@ -34,7 +32,6 @@ public class UserController : IUserController
     /// <param name="emailService">The email service.</param>
     /// <param name="urlBuilder">The URL builder for generating external URLs.</param>
     /// <param name="messages">The localized messages provider.</param>
-    /// <param name="mapper">The AutoMapper instance.</param>
     /// <param name="logger">The logger.</param>
     /// <exception cref="ArgumentNullException">Thrown when any parameter is null.</exception>
     public UserController(
@@ -45,7 +42,6 @@ public class UserController : IUserController
         IEmailService emailService,
         IUrlBuilder urlBuilder,
         IMessages messages,
-        IMapper mapper,
         ILogger<UserController> logger)
     {
         mUserDao = userDao ?? throw new ArgumentNullException(nameof(userDao));
@@ -55,7 +51,6 @@ public class UserController : IUserController
         mEmailService = emailService ?? throw new ArgumentNullException(nameof(emailService));
         mUrlBuilder = urlBuilder ?? throw new ArgumentNullException(nameof(urlBuilder));
         mMessages = messages ?? throw new ArgumentNullException(nameof(messages));
-        mMapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
         mLogger = logger ?? throw new ArgumentNullException(nameof(logger));
     }
 
@@ -204,7 +199,12 @@ public class UserController : IUserController
             }
 
             mLogger.LogInformation("Successfully validated user {UserId}", user.Id);
-            return mMapper.Map<UserInfo>(user);
+            return new UserInfo
+            {
+                Email = user.Email,
+                Role = user.Role,
+                ActiveUser = user.ActiveUser
+            };
         }
         catch (Exception ex)
         {

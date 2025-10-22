@@ -39,6 +39,8 @@
     }
 
 
+    var lastCheckEmail = null;
+    var lastCheckResult = false;
 
     /**
      * Checks email availability with the server.
@@ -46,24 +48,33 @@
      * @returns {Promise<boolean>} True if available, false otherwise.
      */
     async function checkEmailAvailability(email) {
+        if (lastCheckEmail !== null && lastCheckEmail === email) {
+            return lastCheckResult;
+        }
+        
         try {
+            lastCheckEmail = email;
             const response = await fetch(`${API_BASE_URL}/check-email?email=${encodeURIComponent(email)}`);
 
             if (response.status === 429) {
                 console.warn('Register: Email check rate limit exceeded');
-                return true; // Assume available if rate limited
+                lastCheckResult = false;
+                return false; // Assume available if rate limited
             }
 
             if (!response.ok) {
                 console.error('Register: Email check failed');
-                return true; // Assume available on error
+                lastCheckResult = false;
+                return false; // Assume available on error
             }
 
             const data = await response.json();
+            lastCheckResult = data.available;
             return data.available;
         } catch (error) {
             console.error('Register: Error checking email availability:', error);
-            return true; // Assume available on error
+            lastCheckResult = false;
+            return false; // Assume available on error
         }
     }
 
@@ -73,7 +84,9 @@
      */
     async function validateEmailField() {
         const email = emailInput.value.trim();
-
+        
+        emailInput.classList.remove('is-invalid', 'is-valid');
+        
         if (!email) {
             emailInput.classList.add('is-invalid');
             emailError.textContent = 'Email is required';
@@ -88,9 +101,10 @@
 
         // Check email availability with server
         const available = await checkEmailAvailability(email);
+        
         if (!available) {
             emailInput.classList.add('is-invalid');
-            emailError.textContent = 'Email is already registered';
+            emailError.textContent = 'Email is already used';
             return false;
         }
 
@@ -244,34 +258,14 @@
         }
     }
 
-    // Debounce timer for email validation
-    let emailValidationTimer = null;
-
-    /**
-     * Debounced email validation function.
-     */
-    function debouncedEmailValidation() {
-        clearTimeout(emailValidationTimer);
-        emailValidationTimer = setTimeout(async () => {
-            await validateEmailField();
-            updateRegisterButton();
-        }, 500);
-    }
-
     // Attach event listeners
     if (registerForm)
         registerForm.addEventListener('submit', handleRegister);
 
     if (emailInput) {
-        emailInput.addEventListener('blur', async () => {
-            clearTimeout(emailValidationTimer);
+         mailInput.addEventListener('blur', async () => {
             await validateEmailField();
             updateRegisterButton();
-        });
-        emailInput.addEventListener('input', () => {
-            if (emailInput.classList.contains('is-invalid') || emailInput.classList.contains('is-valid')) {
-                debouncedEmailValidation();
-            }
         });
     }
 
@@ -290,10 +284,7 @@
 
     // Initialize
     loadPasswordRules();
-
     console.log('Register: Page initialized');
-
     // Signal that form is fully initialized for testing
     window.registerFormInitialized = true;
-
 })();

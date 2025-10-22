@@ -95,9 +95,10 @@ public class EmailSenderService : IEmailSenderService
                     sender.Open();
 
                     // Process messages
-                    while (mQueue.TryDequeue(out EmailMessage message) && !stoppingToken.IsCancellationRequested)
+                    while (mQueue.TryDequeue(out EmailMessage? message) && !stoppingToken.IsCancellationRequested)
                     {
-                        await ProcessMessageAsync(message, sender, stoppingToken);
+                        if (message != null)
+                            ProcessMessage(message, sender);
                         // Configurable delay between messages
                         if (!stoppingToken.IsCancellationRequested)
                             await Task.Delay(TimeSpan.FromSeconds(mConfiguration.DelayBetweenMessagesSeconds), stoppingToken);
@@ -148,9 +149,7 @@ public class EmailSenderService : IEmailSenderService
     /// </summary>
     /// <param name="message">The email message.</param>
     /// <param name="sender">The SMTP sender.</param>
-    /// <param name="stoppingToken">The cancellation token.</param>
-    /// <returns>A task representing the asynchronous operation.</returns>
-    private async Task ProcessMessageAsync(EmailMessage message, ISmtpSender sender, CancellationToken stoppingToken)
+    private void ProcessMessage(EmailMessage message, ISmtpSender sender)
     {
         try
         {

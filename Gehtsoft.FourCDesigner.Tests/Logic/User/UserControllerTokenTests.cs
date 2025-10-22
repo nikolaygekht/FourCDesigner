@@ -1,4 +1,3 @@
-using AutoMapper;
 using FluentAssertions;
 using Gehtsoft.FourCDesigner.Logic.Config;
 using Gehtsoft.FourCDesigner.Dao;
@@ -23,7 +22,6 @@ public class UserControllerTokenTests
     private readonly Mock<IEmailService> mMockEmailService;
     private readonly Mock<IUrlBuilder> mMockUrlBuilder;
     private readonly Mock<IMessages> mMockMessages;
-    private readonly Mock<IMapper> mMockMapper;
     private readonly Mock<ILogger<UserController>> mMockLogger;
     private readonly UserController mController;
 
@@ -36,7 +34,6 @@ public class UserControllerTokenTests
         mMockEmailService = new Mock<IEmailService>();
         mMockUrlBuilder = new Mock<IUrlBuilder>();
         mMockMessages = new Mock<IMessages>();
-        mMockMapper = new Mock<IMapper>();
         mMockLogger = new Mock<ILogger<UserController>>();
 
         // Setup default message responses
@@ -63,7 +60,6 @@ public class UserControllerTokenTests
             mMockEmailService.Object,
             mMockUrlBuilder.Object,
             mMockMessages.Object,
-            mMockMapper.Object,
             mMockLogger.Object);
     }
 
@@ -81,7 +77,6 @@ public class UserControllerTokenTests
             mMockEmailService.Object,
             mMockUrlBuilder.Object,
             mMockMessages.Object,
-            mMockMapper.Object,
             mMockLogger.Object);
 
         // Assert
@@ -100,7 +95,6 @@ public class UserControllerTokenTests
             null!,
             mMockUrlBuilder.Object,
             mMockMessages.Object,
-            mMockMapper.Object,
             mMockLogger.Object);
 
         // Assert

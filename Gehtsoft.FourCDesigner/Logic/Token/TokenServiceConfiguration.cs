@@ -27,7 +27,7 @@ public class TokenServiceConfiguration : ITokenServiceConfiguration
     {
         get
         {
-            string value = mConfiguration["system:session:tokenExpirationInSeconds"];
+            string? value = mConfiguration["system:session:tokenExpirationInSeconds"];
             if (string.IsNullOrEmpty(value))
                 return 300.0; // Default: 5 minutes
 

@@ -27,7 +27,7 @@ public class EmailConfiguration : IEmailConfiguration
     {
         get
         {
-            string value = mConfiguration["email:smtpPort"];
+            string? value = mConfiguration["email:smtpPort"];
             if (string.IsNullOrEmpty(value))
                 return 587; // Default SMTP port
 
@@ -57,7 +57,7 @@ public class EmailConfiguration : IEmailConfiguration
     {
         get
         {
-            string value = mConfiguration["email:sendingFrequencySeconds"];
+            string? value = mConfiguration["email:sendingFrequencySeconds"];
             if (string.IsNullOrEmpty(value))
                 return 60; // Default: check every 60 seconds
 
@@ -73,7 +73,7 @@ public class EmailConfiguration : IEmailConfiguration
     {
         get
         {
-            string value = mConfiguration["email:pauseAfterErrorMinutes"];
+            string? value = mConfiguration["email:pauseAfterErrorMinutes"];
             if (string.IsNullOrEmpty(value))
                 return 30; // Default: pause for 30 minutes after error
 
@@ -89,7 +89,7 @@ public class EmailConfiguration : IEmailConfiguration
     {
         get
         {
-            string value = mConfiguration["email:maxRetryCount"];
+            string? value = mConfiguration["email:maxRetryCount"];
             if (string.IsNullOrEmpty(value))
                 return 3; // Default: retry 3 times
 
@@ -111,7 +111,7 @@ public class EmailConfiguration : IEmailConfiguration
     {
         get
         {
-            string value = mConfiguration["email:sslAcceptAllCertificates"];
+            string? value = mConfiguration["email:sslAcceptAllCertificates"];
             if (string.IsNullOrEmpty(value))
                 return false;
 
@@ -127,7 +127,7 @@ public class EmailConfiguration : IEmailConfiguration
     {
         get
         {
-            string value = mConfiguration["email:delayBetweenMessagesSeconds"];
+            string? value = mConfiguration["email:delayBetweenMessagesSeconds"];
             if (string.IsNullOrEmpty(value))
                 return 1.0; // Default: 1 second delay between messages
 
@@ -143,7 +143,7 @@ public class EmailConfiguration : IEmailConfiguration
     {
         get
         {
-            string value = mConfiguration["email:disableSending"];
+            string? value = mConfiguration["email:disableSending"];
             if (string.IsNullOrEmpty(value))
                 return false; // Default: sending enabled
 

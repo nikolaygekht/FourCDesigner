@@ -25,7 +25,7 @@ public interface IEmailStorage
     /// </summary>
     /// <param name="id">The message ID.</param>
     /// <returns>The email message, or null if not found.</returns>
-    EmailMessage ReadMessage(Guid id);
+    EmailMessage? ReadMessage(Guid id);
 
     /// <summary>
     /// Writes a message to storage.

@@ -13,7 +13,7 @@ public class SmtpSender : ISmtpSender, IDisposable
 {
     private readonly IEmailConfiguration mConfiguration;
     private readonly ILogger<SmtpSender> mLogger;
-    private SmtpClient mClient;
+    private SmtpClient? mClient;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="SmtpSender"/> class.
@@ -108,7 +108,7 @@ public class SmtpSender : ISmtpSender, IDisposable
             mLogger.LogDebug("Email: Sending message {Id} to {Recipients}",
                 message.Id, string.Join(", ", message.To));
 
-            mClient.Send(mimeMessage);
+            mClient!.Send(mimeMessage);
 
             mLogger.LogInformation("Email: Message {Id} sent successfully", message.Id);
         }

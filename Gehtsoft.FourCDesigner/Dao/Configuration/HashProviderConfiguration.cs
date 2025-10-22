@@ -25,7 +25,7 @@ public class HashProviderConfiguration : IHashProviderConfiguration
     {
         get
         {
-            string salt = mConfiguration["hash:salt"];
+            string? salt = mConfiguration["hash:salt"];
             return string.IsNullOrEmpty(salt) ? DefaultSalt : salt;
         }
     }

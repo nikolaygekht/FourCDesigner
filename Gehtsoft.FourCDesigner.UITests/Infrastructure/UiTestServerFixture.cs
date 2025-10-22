@@ -61,8 +61,8 @@ public class UiTestServerFixture : IAsyncLifetime
                 ["db:createTestUser"] = "false",
                 // Throttle configuration to match production
                 ["application:throttle:enabled"] = "true",
-                ["application:throttle:defaultRequestsPerPeriod"] = "20",
-                ["application:throttle:checkEmailRequestsPerPeriod"] = "10",
+                ["application:throttle:defaultRequestsPerPeriod"] = "200",
+                ["application:throttle:checkEmailRequestsPerPeriod"] = "50",
                 ["application:throttle:periodInSeconds"] = "10",
                 // Serilog configuration - write to file only, not console
                 ["Serilog:MinimumLevel:Default"] = "Debug",
