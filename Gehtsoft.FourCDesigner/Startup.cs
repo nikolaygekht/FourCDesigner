@@ -12,6 +12,7 @@ using Gehtsoft.FourCDesigner.Middleware;
 using Gehtsoft.FourCDesigner.Middleware.Throttling;
 using Gehtsoft.FourCDesigner.Utils;
 using Gehtsoft.FourCDesigner.Logic.Config;
+using Gehtsoft.FourCDesigner.Logic.AI;
 
 namespace Gehtsoft.FourCDesigner
 {
@@ -66,6 +67,9 @@ namespace Gehtsoft.FourCDesigner
 
             // Register throttling services (rate limiting)
             services.AddThrottling();
+
+            // Register AI services (configurations, drivers, and factory)
+            services.AddAIServices();
 
         }
 

@@ -1,0 +1,62 @@
+[
+  {
+    "operation": "validate",
+    "requestPattern": ".*",
+    "userDataPattern": ".*inject.*",
+    "response": {
+      "successful": false,
+      "errorCode": "UNSAFE_INPUT",
+      "output": "Input contains potential injection attempt"
+    }
+  },
+  {
+    "operation": "validate",
+    "requestPattern": ".*",
+    "userDataPattern": ".*ignore.*previous.*instructions.*",
+    "response": {
+      "successful": false,
+      "errorCode": "UNSAFE_INPUT",
+      "output": "Input contains potential prompt injection"
+    }
+  },
+  {
+    "operation": "validate",
+    "requestPattern": ".*",
+    "userDataPattern": ".*",
+    "response": {
+      "successful": true,
+      "errorCode": "",
+      "output": "SAFE"
+    }
+  },
+  {
+    "operation": "process",
+    "requestPattern": ".*suggestions.*",
+    "userDataPattern": ".*math.*",
+    "response": {
+      "successful": true,
+      "errorCode": "",
+      "output": "Consider using visual aids and hands-on activities for math concepts. Try incorporating real-world examples and collaborative problem-solving exercises."
+    }
+  },
+  {
+    "operation": "process",
+    "requestPattern": ".*suggestions.*",
+    "userDataPattern": ".*science.*",
+    "response": {
+      "successful": true,
+      "errorCode": "",
+      "output": "For science topics, consider demonstrations and experiments. Engage students with inquiry-based learning and encourage hypothesis testing."
+    }
+  },
+  {
+    "operation": "process",
+    "requestPattern": ".*",
+    "userDataPattern": ".*",
+    "response": {
+      "successful": true,
+      "errorCode": "",
+      "output": "Here are some general suggestions: Focus on active learning, incorporate multiple learning modalities, and provide opportunities for student collaboration."
+    }
+  }
+]

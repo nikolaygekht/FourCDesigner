@@ -1,0 +1,22 @@
+[
+  {
+    "operation": "validate",
+    "requestPattern": "[invalid(regex",
+    "userDataPattern": ".*",
+    "response": {
+      "successful": false,
+      "errorCode": "ERROR",
+      "output": "This has invalid regex"
+    }
+  },
+  {
+    "operation": "validate",
+    "requestPattern": ".*",
+    "userDataPattern": ".*valid.*",
+    "response": {
+      "successful": true,
+      "errorCode": "",
+      "output": "Valid pattern match"
+    }
+  }
+]

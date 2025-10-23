@@ -1,8 +1,9 @@
 TBD:
-* Add reset password tests
-* Ручками регистрация до конца не работает - активация проходин, но залогиниться нельщя
-* Ручками смена пароля не работает
-* На смене пароля поле пароля выглядит уебански
+* Implement 4C controller
+* Implement 4C Web API
+* Design 4C UI
+* Implement 4C UI
+
 
 
 

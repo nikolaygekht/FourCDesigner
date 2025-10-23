@@ -1,0 +1,72 @@
+[
+  {
+    "operation": "validate",
+    "requestPattern": ".*",
+    "userDataPattern": ".*inject.*",
+    "response": {
+      "successful": false,
+      "errorCode": "UNSAFE_INPUT",
+      "output": "Input contains potential injection attempt"
+    }
+  },
+  {
+    "operation": "validate",
+    "requestPattern": ".*",
+    "userDataPattern": ".*malicious.*",
+    "response": {
+      "successful": false,
+      "errorCode": "UNSAFE_INPUT",
+      "output": "Input contains malicious content"
+    }
+  },
+  {
+    "operation": "validate",
+    "requestPattern": ".*",
+    "userDataPattern": ".*",
+    "response": {
+      "successful": true,
+      "errorCode": "",
+      "output": "SAFE"
+    }
+  },
+  {
+    "operation": "process",
+    "requestPattern": ".*suggestions.*",
+    "userDataPattern": ".*math.*",
+    "response": {
+      "successful": true,
+      "errorCode": "",
+      "output": "Consider using visual aids and hands-on activities for math concepts."
+    }
+  },
+  {
+    "operation": "process",
+    "requestPattern": ".*suggestions.*",
+    "userDataPattern": ".*science.*",
+    "response": {
+      "successful": true,
+      "errorCode": "",
+      "output": "For science topics, consider demonstrations and experiments."
+    }
+  },
+  {
+    "operation": "process",
+    "requestPattern": ".*analyze.*",
+    "userDataPattern": "test data",
+    "response": {
+      "successful": true,
+      "errorCode": "",
+      "output": "Analysis result for test data"
+    }
+  },
+  {
+    "operation": "process",
+    "requestPattern": ".*",
+    "userDataPattern": ".*",
+    "response": {
+      "successful": true,
+      "errorCode": "",
+      "output": "Default general response"
+    }
+  }
+]
