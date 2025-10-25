@@ -2,19 +2,29 @@
 #pragma warning disable CS8625, CS8602, CS8600, CS8620
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
+using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Logging;
 using Gehtsoft.FourCDesigner.Dao;
+using Gehtsoft.FourCDesigner.Logic.Email.Sender;
 
 namespace Gehtsoft.FourCDesigner.ApiTests;
 
 /// <summary>
-/// Custom web application factory for API tests with in-memory SQLite database.
+/// Custom web application factory for API tests with in-memory SQLite database and mock SMTP sender.
 /// </summary>
 public class TestWebApplicationFactory : WebApplicationFactory<Program>
 {
     private readonly string mDatabaseName;
+    private readonly MockSmtpSender mMockSmtpSender;
+
+    /// <summary>
+    /// Gets the mock SMTP sender that captures all emails sent during tests.
+    /// Thread-safe and can be accessed from tests to retrieve sent emails.
+    /// </summary>
+    public MockSmtpSender MockSmtpSender => mMockSmtpSender;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="TestWebApplicationFactory"/> class.
@@ -23,6 +33,7 @@ public class TestWebApplicationFactory : WebApplicationFactory<Program>
     public TestWebApplicationFactory(string databaseName)
     {
         mDatabaseName = databaseName ?? throw new ArgumentNullException(nameof(databaseName));
+        mMockSmtpSender = new MockSmtpSender();
     }
 
     /// <summary>
@@ -39,6 +50,11 @@ public class TestWebApplicationFactory : WebApplicationFactory<Program>
                 ["db:driver"] = "sqlite",
                 ["db:connectionString"] = $"Data Source={mDatabaseName};Mode=Memory;Cache=Shared",
                 ["db:createTestUser"] = "true",
+                // Email configuration - ensure sending is enabled for tests
+                ["email:disableSending"] = "false",
+                ["email:sendingFrequencySeconds"] = "1",
+                ["email:mailAddressFrom"] = "test@4cdesigner.com", // Required for sending emails
+                ["email:delayBetweenMessagesSeconds"] = "0", // No delay between messages in tests
                 // Configure test log file (no console output)
                 ["Serilog:WriteTo:0:Name"] = "File",
                 ["Serilog:WriteTo:0:Args:path"] = "./logs/api-test-log.txt",
@@ -52,9 +68,15 @@ public class TestWebApplicationFactory : WebApplicationFactory<Program>
             logging.ClearProviders();
         });
 
-        builder.ConfigureServices(services =>
+        builder.ConfigureTestServices(services =>
         {
-            // Additional test-specific service configuration can go here
+            // Replace the real SMTP sender with our mock
+            // ConfigureTestServices runs AFTER all other service configuration
+            // Remove all existing ISmtpSender registrations and replace with our mock
+            services.RemoveAll<ISmtpSender>();
+
+            // Register as scoped (matching original pattern) but return same instance
+            services.AddScoped<ISmtpSender>(_ => mMockSmtpSender);
         });
     }
 }

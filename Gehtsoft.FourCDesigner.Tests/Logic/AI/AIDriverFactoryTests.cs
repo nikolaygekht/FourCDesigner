@@ -105,6 +105,7 @@ public class AIDriverFactoryTests
         var mockOllamaConfig = new Mock<IAIOllamaConfiguration>();
         mockOllamaConfig.Setup(c => c.ServiceUrl).Returns("http://localhost:11434");
         mockOllamaConfig.Setup(c => c.Model).Returns("llama2");
+        mockOllamaConfig.Setup(c => c.TimeoutSeconds).Returns(120);
 
         var mockOllamaLogger = new Mock<ILogger<AIOllamaDriver>>();
 
@@ -142,6 +143,7 @@ public class AIDriverFactoryTests
         mockOpenAIConfig.Setup(c => c.ServiceUrl).Returns("https://api.openai.com/v1");
         mockOpenAIConfig.Setup(c => c.ApiKey).Returns("test-key");
         mockOpenAIConfig.Setup(c => c.Model).Returns("gpt-3.5-turbo");
+        mockOpenAIConfig.Setup(c => c.TimeoutSeconds).Returns(60);
 
         var mockOpenAILogger = new Mock<ILogger<AIOpenAIDriver>>();
 
@@ -213,6 +215,7 @@ public class AIDriverFactoryTests
         var mockOllamaConfig = new Mock<IAIOllamaConfiguration>();
         mockOllamaConfig.Setup(c => c.ServiceUrl).Returns("http://localhost:11434");
         mockOllamaConfig.Setup(c => c.Model).Returns("llama2");
+        mockOllamaConfig.Setup(c => c.TimeoutSeconds).Returns(120);
 
         var mockOllamaLogger = new Mock<ILogger<AIOllamaDriver>>();
 
