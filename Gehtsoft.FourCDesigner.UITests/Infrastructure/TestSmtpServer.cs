@@ -7,10 +7,10 @@ using SmtpServer.Protocol;
 using SmtpServer.Storage;
 using MimeKit;
 
-namespace Gehtsoft.FourCDesigner.Tests.Logic.Email;
+namespace Gehtsoft.FourCDesigner.UITests.Infrastructure;
 
 /// <summary>
-/// Test SMTP server with authentication support for integration tests.
+/// Test SMTP server with authentication support for UI integration tests.
 /// Uses SmtpServer package to run a real SMTP server on localhost.
 /// </summary>
 public class TestSmtpServer : IDisposable
@@ -208,8 +208,8 @@ internal class TestMessageStore : MessageStore
             {
                 Message = message,
                 ReceivedAt = DateTime.UtcNow,
-                From = transaction.From.ToString(),
-                To = transaction.To.Select(t => t.ToString()).ToList()
+                From = transaction.From?.ToString() ?? string.Empty,
+                To = transaction.To.Select(t => t.ToString()!).ToList()
             });
 
             return SmtpResponse.Ok;

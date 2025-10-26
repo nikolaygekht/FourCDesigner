@@ -1,0 +1,35 @@
+CHANGES NEEDED TO UiTestServerFixture.cs:
+
+1. Add private field after line 23:
+   private TestSmtpServer? _smtpServer;
+
+2. Add public property after line 44:
+   /// <summary>
+   /// Gets the shared SMTP server instance.
+   /// </summary>
+   public TestSmtpServer SmtpServer => _smtpServer ?? throw new InvalidOperationException("Fixture not initialized");
+
+3. In InitializeAsync(), after line 51, add BEFORE configuration:
+   // Start test SMTP server FIRST (before web server)
+   _smtpServer = new TestSmtpServer(port: 25025, username: "testuser", password: "testpass");
+   await _smtpServer.StartAsync();
+
+4. In configuration dictionary, REPLACE line 57 with:
+   ["email:disableSending"] = "false",
+   
+5. ADD after line 58:
+   ["email:smtp:host"] = "localhost",
+   ["email:smtp:port"] = "25025",
+   ["email:smtp:user"] = "testuser",
+   ["email:smtp:password"] = "testpass",
+   ["email:smtp:sslMode"] = "none",
+
+6. REMOVE lines 139-140 (ClearEmailQueueAsync call)
+
+7. In DisposeAsync(), add at the BEGINNING (line 234):
+   // Stop SMTP server
+   _smtpServer?.Dispose();
+
+8. REMOVE lines 207-227 (GetEmailQueueSizeAsync, DequeueEmailAsync methods)
+9. REMOVE lines 174-179 (ClearEmailQueueAsync method)
+10. REMOVE lines 273-330 (QueueSizeResponse and DequeueEmailResponse classes)

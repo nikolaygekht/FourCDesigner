@@ -21,6 +21,7 @@ public class UiTestServerFixture : IAsyncLifetime
     private DbConnection? _keepAliveConnection;
     private Microsoft.Playwright.IPlaywright? _playwright;
     private Microsoft.Playwright.IBrowser? _browser;
+    private TestSmtpServer? _smtpServer;
     private const string DatabaseName = "SharedAuthTestDatabase";
 
     /// <summary>
@@ -44,18 +45,33 @@ public class UiTestServerFixture : IAsyncLifetime
     public Microsoft.Playwright.IBrowser Browser => _browser ?? throw new InvalidOperationException("Fixture not initialized");
 
     /// <summary>
+    /// Gets the shared SMTP server instance.
+    /// </summary>
+    public TestSmtpServer SmtpServer => _smtpServer ?? throw new InvalidOperationException("Fixture not initialized");
+
+    /// <summary>
     /// Initializes the shared test server (called once before all tests).
     /// </summary>
     public async Task InitializeAsync()
     {
         var connectionString = $"Data Source={DatabaseName};Mode=Memory;Cache=Shared";
 
+        // Start test SMTP server FIRST (before web server)
+        _smtpServer = new TestSmtpServer(port: 25025, username: "testuser", password: "testpass");
+        await _smtpServer.StartAsync();
+
         // Build test configuration FIRST (before anything else)
         var testConfiguration = new ConfigurationBuilder()
             .AddInMemoryCollection(new Dictionary<string, string?>
             {
-                ["email:disableSending"] = "true",
+                // Enable real SMTP sending to our test SMTP server
+                ["email:disableSending"] = "false",
                 ["email:mailAddressFrom"] = "test@test.com",
+                ["email:smtp:host"] = "localhost",
+                ["email:smtp:port"] = "25025",
+                ["email:smtp:user"] = "testuser",
+                ["email:smtp:password"] = "testpass",
+                ["email:smtp:sslMode"] = "none",
                 ["db:driver"] = "sqlite",
                 ["db:connectionString"] = connectionString,
                 ["db:createTestUser"] = "false",
@@ -135,9 +151,6 @@ public class UiTestServerFixture : IAsyncLifetime
 
         // Seed database with test users (once for all tests)
         await SeedDatabaseAsync();
-
-        // Clear email queue before starting tests
-        await ClearEmailQueueAsync();
 
         // Initialize Playwright and browser (once for all tests)
         _playwright = await Microsoft.Playwright.Playwright.CreateAsync();
@@ -231,15 +244,8 @@ public class UiTestServerFixture : IAsyncLifetime
     /// </summary>
     public async Task DisposeAsync()
     {
-        // Clear email queue after all tests
-        try
-        {
-            await ClearEmailQueueAsync();
-        }
-        catch
-        {
-            // Ignore errors during cleanup
-        }
+        // Stop SMTP server
+        _smtpServer?.Dispose();
 
         // Dispose Playwright browser and instance
         if (_browser != null)
