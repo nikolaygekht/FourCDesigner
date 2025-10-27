@@ -47,6 +47,9 @@ namespace Gehtsoft.FourCDesigner
             // Register system configuration
             services.AddSystemConfig();
 
+            // Register SSI middleware services
+            services.AddSsiMiddleware();
+
             // Register message services (localization)
             services.AddMessages();
 

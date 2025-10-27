@@ -1,0 +1,428 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+ <!--#include file="includes/head.html" -->
+ <link rel="stylesheet" href="/css/plan.css?v=$(app-version)">
+ <title>Lesson Plan - 4C Instructional Designer</title>
+</head>
+<body>
+ <div class="plan-layout">
+  <aside class="plan-sidebar">
+   <div class="sidebar-header">
+    <h5>4C Lesson Plan</h5>
+   </div>
+   <nav class="plan-nav">
+    <a href="#section-overview" class="plan-nav-item active" data-section="overview">Lesson Overview</a>
+    <a href="#section-connection" class="plan-nav-item" data-section="connection">Connection</a>
+    <a href="#section-concepts" class="plan-nav-item" data-section="concepts">Concepts</a>
+    <a href="#section-practice" class="plan-nav-item" data-section="practice">Concrete Practice</a>
+    <a href="#section-conclusion" class="plan-nav-item" data-section="conclusion">Conclusion</a>
+    <a href="#section-review" class="plan-nav-item" data-section="review">Review</a>
+    <a href="#section-export" class="plan-nav-item" data-section="export">Export</a>
+   </nav>
+  </aside>
+  <main class="plan-content">
+   <div class="plan-content-inner">
+    <section id="section-overview" class="plan-section active">
+     <h2>Lesson Overview</h2>
+     <div class="section-actions mb-3">
+      <button type="button" class="btn btn-danger" id="start-over-button">Start Over</button>
+     </div>
+     <div class="form-group">
+      <label for="topic" class="form-label">Lesson Topic</label>
+      <input type="text" class="form-control" id="topic" placeholder="Enter the topic of your lesson">
+      <div class="assist-actions">
+       <button type="button" class="btn btn-sm btn-outline-secondary" data-action="review_topic">Review</button>
+       <button type="button" class="btn btn-sm btn-outline-secondary" data-action="suggest_topic">Suggest</button>
+      </div>
+     </div>
+     <div class="form-group">
+      <label for="audience" class="form-label">Target Audience</label>
+      <textarea class="form-control" id="audience" rows="4" placeholder="Describe who the learners are, their characteristics (age, education, job function, etc.) and their needs"></textarea>
+      <div class="assist-actions">
+       <button type="button" class="btn btn-sm btn-outline-secondary" data-action="review_audience">Review</button>
+       <button type="button" class="btn btn-sm btn-outline-secondary" data-action="suggest_audience">Suggest</button>
+      </div>
+     </div>
+     <div class="form-group">
+      <label for="learningOutcomes" class="form-label">Learning Outcomes</label>
+      <textarea class="form-control" id="learningOutcomes" rows="4" placeholder="Describe what learners will be able to do after completing this lesson"></textarea>
+      <div class="assist-actions">
+       <button type="button" class="btn btn-sm btn-outline-secondary" data-action="review_outcomes">Review</button>
+       <button type="button" class="btn btn-sm btn-outline-secondary" data-action="suggest_outcomes">Suggest</button>
+      </div>
+     </div>
+     <div class="section-actions mt-4">
+      <button type="button" class="btn btn-primary save-section-button" data-section="overview">Save</button>
+     </div>
+    </section>
+    <section id="section-connection" class="plan-section">
+     <h2>Connection</h2>
+     <p class="text-muted">Learners make connections with what they already know and with each other.</p>
+     <div class="form-group">
+      <label for="conn_timing" class="form-label">Time Allocated (minutes)</label>
+      <input type="number" class="form-control" id="conn_timing" value="5" min="1">
+     </div>
+     <div class="form-group">
+      <label for="conn_goal" class="form-label">Connection Goal</label>
+      <textarea class="form-control" id="conn_goal" rows="3" placeholder="What connections do you want learners to make?"></textarea>
+      <div class="assist-actions">
+       <button type="button" class="btn btn-sm btn-outline-secondary" data-action="review_conn_goal">Review</button>
+       <button type="button" class="btn btn-sm btn-outline-secondary" data-action="suggest_conn_goal">Suggest</button>
+      </div>
+     </div>
+     <div class="form-group">
+      <label for="conn_activities" class="form-label">Activities</label>
+      <textarea class="form-control" id="conn_activities" rows="4" placeholder="Describe the activities to perform during this phase"></textarea>
+      <div class="assist-actions">
+       <button type="button" class="btn btn-sm btn-outline-secondary" data-action="review_conn_activities">Review</button>
+       <button type="button" class="btn btn-sm btn-outline-secondary" data-action="suggest_conn_activities">Suggest</button>
+      </div>
+     </div>
+     <div class="form-group">
+      <label for="conn_materials" class="form-label">Materials to Prepare</label>
+      <textarea class="form-control" id="conn_materials" rows="3" placeholder="List any materials needed for this phase"></textarea>
+      <div class="assist-actions">
+       <button type="button" class="btn btn-sm btn-outline-secondary" data-action="review_conn_materials">Review</button>
+       <button type="button" class="btn btn-sm btn-outline-secondary" data-action="suggest_conn_materials">Suggest</button>
+      </div>
+     </div>
+     <div class="section-actions mt-4">
+      <button type="button" class="btn btn-primary save-section-button" data-section="connections">Save</button>
+     </div>
+    </section>
+    <section id="section-concepts" class="plan-section">
+     <h2>Concepts</h2>
+     <p class="text-muted">Learners take in information in a multi-sensory way.</p>
+     <div class="form-group">
+      <label for="concepts_timing" class="form-label">Time Allocated (minutes)</label>
+      <input type="number" class="form-control" id="concepts_timing" value="15" min="1">
+     </div>
+     <div class="form-group">
+      <label for="concepts_needToKnow" class="form-label">Need to Know Concepts</label>
+      <textarea class="form-control" id="concepts_needToKnow" rows="4" placeholder="List the essential concepts learners must understand"></textarea>
+      <div class="assist-actions">
+       <button type="button" class="btn btn-sm btn-outline-secondary" data-action="review_concepts_needToKnow">Review</button>
+       <button type="button" class="btn btn-sm btn-outline-secondary" data-action="suggest_concepts_needToKnow">Suggest</button>
+      </div>
+     </div>
+     <div class="form-group">
+      <label for="concepts_goodToKnow" class="form-label">Good to Know Concepts</label>
+      <textarea class="form-control" id="concepts_goodToKnow" rows="4" placeholder="List additional helpful concepts"></textarea>
+      <div class="assist-actions">
+       <button type="button" class="btn btn-sm btn-outline-secondary" data-action="review_concepts_goodToKnow">Review</button>
+       <button type="button" class="btn btn-sm btn-outline-secondary" data-action="suggest_concepts_goodToKnow">Suggest</button>
+      </div>
+     </div>
+     <div class="form-group">
+      <label for="concepts_theses" class="form-label">Theses to Deliver</label>
+      <textarea class="form-control" id="concepts_theses" rows="4" placeholder="List the key theses to be delivered"></textarea>
+      <div class="assist-actions">
+       <button type="button" class="btn btn-sm btn-outline-secondary" data-action="review_concepts_theses">Review</button>
+       <button type="button" class="btn btn-sm btn-outline-secondary" data-action="suggest_concepts_theses">Suggest</button>
+      </div>
+     </div>
+     <div class="form-group">
+      <label for="concepts_structure" class="form-label">Lesson Structure</label>
+      <textarea class="form-control" id="concepts_structure" rows="4" placeholder="Describe the structure of the delivery"></textarea>
+      <div class="assist-actions">
+       <button type="button" class="btn btn-sm btn-outline-secondary" data-action="review_concepts_structure">Review</button>
+       <button type="button" class="btn btn-sm btn-outline-secondary" data-action="suggest_concepts_structure">Suggest</button>
+      </div>
+     </div>
+     <div class="form-group">
+      <label for="concepts_activities" class="form-label">Activities</label>
+      <textarea class="form-control" id="concepts_activities" rows="4" placeholder="List activities that engage all learning styles (VARK) and six trumps"></textarea>
+      <div class="assist-actions">
+       <button type="button" class="btn btn-sm btn-outline-secondary" data-action="review_concepts_activities">Review</button>
+       <button type="button" class="btn btn-sm btn-outline-secondary" data-action="suggest_concepts_activities">Suggest</button>
+      </div>
+     </div>
+     <div class="form-group">
+      <label for="concepts_materials" class="form-label">Materials to Prepare</label>
+      <textarea class="form-control" id="concepts_materials" rows="3" placeholder="List materials needed for this phase"></textarea>
+      <div class="assist-actions">
+       <button type="button" class="btn btn-sm btn-outline-secondary" data-action="review_concepts_materials">Review</button>
+       <button type="button" class="btn btn-sm btn-outline-secondary" data-action="suggest_concepts_materials">Suggest</button>
+      </div>
+     </div>
+     <div class="section-actions mt-4">
+      <button type="button" class="btn btn-primary save-section-button" data-section="concepts">Save</button>
+     </div>
+    </section>
+    <section id="section-practice" class="plan-section">
+     <h2>Concrete Practice</h2>
+     <p class="text-muted">Learners practice a skill or repeat a procedure being learned.</p>
+     <div class="form-group">
+      <label for="practice_timing" class="form-label">Time Allocated (minutes)</label>
+      <input type="number" class="form-control" id="practice_timing" value="25" min="1">
+     </div>
+     <div class="form-group">
+      <label for="practice_desiredOutput" class="form-label">Desired Output of Exercise</label>
+      <textarea class="form-control" id="practice_desiredOutput" rows="3" placeholder="What should learners create during this exercise?"></textarea>
+      <div class="assist-actions">
+       <button type="button" class="btn btn-sm btn-outline-secondary" data-action="review_practice_output">Review</button>
+       <button type="button" class="btn btn-sm btn-outline-secondary" data-action="suggest_practice_output">Suggest</button>
+      </div>
+     </div>
+     <div class="form-group">
+      <label for="practice_focusArea" class="form-label">Focus Area</label>
+      <textarea class="form-control" id="practice_focusArea" rows="3" placeholder="Which concepts, skills, or nuances are most important?"></textarea>
+      <div class="assist-actions">
+       <button type="button" class="btn btn-sm btn-outline-secondary" data-action="review_practice_focus">Review</button>
+       <button type="button" class="btn btn-sm btn-outline-secondary" data-action="suggest_practice_focus">Suggest</button>
+      </div>
+     </div>
+     <div class="form-group">
+      <label for="practice_activities" class="form-label">Activities</label>
+      <textarea class="form-control" id="practice_activities" rows="4" placeholder="List the activities to perform during the exercise"></textarea>
+      <div class="assist-actions">
+       <button type="button" class="btn btn-sm btn-outline-secondary" data-action="review_practice_activities">Review</button>
+       <button type="button" class="btn btn-sm btn-outline-secondary" data-action="suggest_practice_activities">Suggest</button>
+      </div>
+     </div>
+     <div class="form-group">
+      <label for="practice_details" class="form-label">Detailed Plan</label>
+      <textarea class="form-control" id="practice_details" rows="5" placeholder="Describe how to run these activities step by step"></textarea>
+      <div class="assist-actions">
+       <button type="button" class="btn btn-sm btn-outline-secondary" data-action="review_practice_details">Review</button>
+       <button type="button" class="btn btn-sm btn-outline-secondary" data-action="suggest_practice_details">Suggest</button>
+      </div>
+     </div>
+     <div class="form-group">
+      <label for="practice_materials" class="form-label">Materials to Prepare</label>
+      <textarea class="form-control" id="practice_materials" rows="3" placeholder="List materials needed for this phase"></textarea>
+      <div class="assist-actions">
+       <button type="button" class="btn btn-sm btn-outline-secondary" data-action="review_practice_materials">Review</button>
+       <button type="button" class="btn btn-sm btn-outline-secondary" data-action="suggest_practice_materials">Suggest</button>
+      </div>
+     </div>
+     <div class="section-actions mt-4">
+      <button type="button" class="btn btn-primary save-section-button" data-section="concretePractice">Save</button>
+     </div>
+    </section>
+    <section id="section-conclusion" class="plan-section">
+     <h2>Conclusion</h2>
+     <p class="text-muted">Learners summarize what they have learned and make action plans.</p>
+     <div class="form-group">
+      <label for="concl_timing" class="form-label">Time Allocated (minutes)</label>
+      <input type="number" class="form-control" id="concl_timing" value="5" min="1">
+     </div>
+     <div class="form-group">
+      <label for="concl_goal" class="form-label">Conclusion Goal</label>
+      <textarea class="form-control" id="concl_goal" rows="3" placeholder="What should learners accomplish in the conclusion?"></textarea>
+      <div class="assist-actions">
+       <button type="button" class="btn btn-sm btn-outline-secondary" data-action="review_concl_goal">Review</button>
+       <button type="button" class="btn btn-sm btn-outline-secondary" data-action="suggest_concl_goal">Suggest</button>
+      </div>
+     </div>
+     <div class="form-group">
+      <label for="concl_activities" class="form-label">Activities</label>
+      <textarea class="form-control" id="concl_activities" rows="4" placeholder="Describe the activities to perform during this phase"></textarea>
+      <div class="assist-actions">
+       <button type="button" class="btn btn-sm btn-outline-secondary" data-action="review_concl_activities">Review</button>
+       <button type="button" class="btn btn-sm btn-outline-secondary" data-action="suggest_concl_activities">Suggest</button>
+      </div>
+     </div>
+     <div class="form-group">
+      <label for="concl_materials" class="form-label">Materials to Prepare</label>
+      <textarea class="form-control" id="concl_materials" rows="3" placeholder="List any materials needed for this phase"></textarea>
+      <div class="assist-actions">
+       <button type="button" class="btn btn-sm btn-outline-secondary" data-action="review_concl_materials">Review</button>
+       <button type="button" class="btn btn-sm btn-outline-secondary" data-action="suggest_concl_materials">Suggest</button>
+      </div>
+     </div>
+     <div class="section-actions mt-4">
+      <button type="button" class="btn btn-primary save-section-button" data-section="conclusions">Save</button>
+     </div>
+    </section>
+    <section id="section-review" class="plan-section">
+     <h2>Review Lesson Plan</h2>
+     <p class="text-muted">Review your complete lesson plan and get AI feedback.</p>
+     <div class="review-summary">
+      <div class="card mb-3">
+       <div class="card-header">
+        <h5>Lesson Overview</h5>
+       </div>
+       <div class="card-body">
+        <div class="review-item">
+         <strong>Topic:</strong>
+         <p id="review-topic" class="text-muted">Not yet defined</p>
+        </div>
+        <div class="review-item">
+         <strong>Audience:</strong>
+         <p id="review-audience" class="text-muted">Not yet defined</p>
+        </div>
+        <div class="review-item">
+         <strong>Learning Outcomes:</strong>
+         <p id="review-learningOutcomes" class="text-muted">Not yet defined</p>
+        </div>
+       </div>
+      </div>
+      <div class="card mb-3">
+       <div class="card-header">
+        <h5>Connection <span class="badge bg-secondary" id="review-conn-timing">5 min</span></h5>
+       </div>
+       <div class="card-body">
+        <div class="review-item">
+         <strong>Goal:</strong>
+         <p id="review-conn-goal" class="text-muted">Not yet defined</p>
+        </div>
+        <div class="review-item">
+         <strong>Activities:</strong>
+         <p id="review-conn-activities" class="text-muted">Not yet defined</p>
+        </div>
+        <div class="review-item">
+         <strong>Materials:</strong>
+         <p id="review-conn-materials" class="text-muted">Not yet defined</p>
+        </div>
+       </div>
+      </div>
+      <div class="card mb-3">
+       <div class="card-header">
+        <h5>Concepts <span class="badge bg-secondary" id="review-concepts-timing">15 min</span></h5>
+       </div>
+       <div class="card-body">
+        <div class="review-item">
+         <strong>Need to Know:</strong>
+         <p id="review-concepts-needToKnow" class="text-muted">Not yet defined</p>
+        </div>
+        <div class="review-item">
+         <strong>Good to Know:</strong>
+         <p id="review-concepts-goodToKnow" class="text-muted">Not yet defined</p>
+        </div>
+        <div class="review-item">
+         <strong>Theses:</strong>
+         <p id="review-concepts-theses" class="text-muted">Not yet defined</p>
+        </div>
+        <div class="review-item">
+         <strong>Structure:</strong>
+         <p id="review-concepts-structure" class="text-muted">Not yet defined</p>
+        </div>
+        <div class="review-item">
+         <strong>Activities:</strong>
+         <p id="review-concepts-activities" class="text-muted">Not yet defined</p>
+        </div>
+        <div class="review-item">
+         <strong>Materials:</strong>
+         <p id="review-concepts-materials" class="text-muted">Not yet defined</p>
+        </div>
+       </div>
+      </div>
+      <div class="card mb-3">
+       <div class="card-header">
+        <h5>Concrete Practice <span class="badge bg-secondary" id="review-practice-timing">25 min</span></h5>
+       </div>
+       <div class="card-body">
+        <div class="review-item">
+         <strong>Desired Output:</strong>
+         <p id="review-practice-desiredOutput" class="text-muted">Not yet defined</p>
+        </div>
+        <div class="review-item">
+         <strong>Focus Area:</strong>
+         <p id="review-practice-focusArea" class="text-muted">Not yet defined</p>
+        </div>
+        <div class="review-item">
+         <strong>Activities:</strong>
+         <p id="review-practice-activities" class="text-muted">Not yet defined</p>
+        </div>
+        <div class="review-item">
+         <strong>Detailed Plan:</strong>
+         <p id="review-practice-details" class="text-muted">Not yet defined</p>
+        </div>
+        <div class="review-item">
+         <strong>Materials:</strong>
+         <p id="review-practice-materials" class="text-muted">Not yet defined</p>
+        </div>
+       </div>
+      </div>
+      <div class="card mb-3">
+       <div class="card-header">
+        <h5>Conclusion <span class="badge bg-secondary" id="review-concl-timing">5 min</span></h5>
+       </div>
+       <div class="card-body">
+        <div class="review-item">
+         <strong>Goal:</strong>
+         <p id="review-concl-goal" class="text-muted">Not yet defined</p>
+        </div>
+        <div class="review-item">
+         <strong>Activities:</strong>
+         <p id="review-concl-activities" class="text-muted">Not yet defined</p>
+        </div>
+        <div class="review-item">
+         <strong>Materials:</strong>
+         <p id="review-concl-materials" class="text-muted">Not yet defined</p>
+        </div>
+       </div>
+      </div>
+     </div>
+     <div class="review-actions">
+      <button type="button" class="btn btn-primary btn-lg" data-action="review_whole_lesson">Get Feedback on Entire Lesson</button>
+     </div>
+     <div class="quick-nav mt-4">
+      <h5>Quick Navigation</h5>
+      <div class="btn-group" role="group">
+       <button type="button" class="btn btn-outline-primary btn-sm" data-navigate="overview">Edit Overview</button>
+       <button type="button" class="btn btn-outline-primary btn-sm" data-navigate="connection">Edit Connection</button>
+       <button type="button" class="btn btn-outline-primary btn-sm" data-navigate="concepts">Edit Concepts</button>
+       <button type="button" class="btn btn-outline-primary btn-sm" data-navigate="practice">Edit Practice</button>
+       <button type="button" class="btn btn-outline-primary btn-sm" data-navigate="conclusion">Edit Conclusion</button>
+      </div>
+     </div>
+    </section>
+    <section id="section-export" class="plan-section">
+     <h2>Export Lesson Plan</h2>
+     <p class="text-muted">Download or print your completed lesson plan.</p>
+     <div class="export-actions mb-4">
+      <button type="button" class="btn btn-success me-2" data-action="export_html">Download as HTML</button>
+      <button type="button" class="btn btn-secondary" data-action="print_lesson">Print Lesson Plan</button>
+     </div>
+     <div class="export-preview">
+      <h5>Preview</h5>
+      <div class="card">
+       <div class="card-body" id="export-preview-content">
+        <p class="text-muted">Your lesson plan preview will appear here.</p>
+       </div>
+      </div>
+     </div>
+    </section>
+   </div>
+  </main>
+ </div>
+
+ <!-- AI Assist Modal -->
+ <div class="modal fade" id="ai-assist-modal" tabindex="-1" aria-labelledby="ai-assist-modal-label" aria-hidden="true">
+  <div class="modal-dialog modal-lg">
+   <div class="modal-content">
+    <div class="modal-header">
+     <h5 class="modal-title" id="ai-assist-modal-label">AI Assistant</h5>
+     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+    </div>
+    <div class="modal-body" id="ai-assist-modal-body">
+     <div id="ai-assist-loading">
+      <div class="d-flex align-items-center">
+       <div class="spinner-border spinner-border-sm me-2" role="status">
+        <span class="visually-hidden">Loading...</span>
+       </div>
+       <span>The request is in progress...</span>
+      </div>
+     </div>
+     <div id="ai-assist-result" style="display: none;">
+      <div id="ai-assist-result-text" class="mb-3" style="white-space: pre-wrap;"></div>
+     </div>
+    </div>
+    <div class="modal-footer" id="ai-assist-modal-footer">
+     <button type="button" class="btn btn-secondary" id="ai-assist-close-btn" data-bs-dismiss="modal">Close</button>
+     <div id="ai-assist-action-buttons" style="display: none;">
+      <button type="button" class="btn btn-primary" id="ai-assist-append-btn">Append</button>
+      <button type="button" class="btn btn-success" id="ai-assist-replace-btn">Replace</button>
+     </div>
+    </div>
+   </div>
+  </div>
+ </div>
+
+ <!--#include file="includes/scripts.html" -->
+ <script src="/js/plan.js?v=$(app-version)"></script>
+</body>
+</html>
