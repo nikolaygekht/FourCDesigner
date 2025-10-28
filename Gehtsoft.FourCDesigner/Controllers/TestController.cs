@@ -10,6 +10,7 @@ using Gehtsoft.FourCDesigner.Logic.AI.Ollama;
 using Gehtsoft.FourCDesigner.Logic.AI.OpenAI;
 using Gehtsoft.FourCDesigner.Middleware.Throttling;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Configuration;
 using System.Diagnostics;
 
 namespace Gehtsoft.FourCDesigner.Controllers;
@@ -32,9 +33,7 @@ public class TestController : ControllerBase
     private readonly IUserController mUserController;
     private readonly IThrottleCache mThrottleCache;
     private readonly IHashProvider mHashProvider;
-    private readonly IAITestingConfiguration mAITestingConfiguration;
-    private readonly IAIOllamaConfiguration mAIOllamaConfiguration;
-    private readonly IAIOpenAIConfiguration mAIOpenAIConfiguration;
+    private readonly IConfiguration mConfiguration;
     private readonly IServiceProvider mServiceProvider;
 
     /// <summary>
@@ -49,9 +48,7 @@ public class TestController : ControllerBase
     /// <param name="userController">The user controller.</param>
     /// <param name="throttleCache">The throttle cache.</param>
     /// <param name="hashProvider">The hash provider.</param>
-    /// <param name="aiTestingConfiguration">The AI testing configuration.</param>
-    /// <param name="aiOllamaConfiguration">The AI Ollama configuration.</param>
-    /// <param name="aiOpenAIConfiguration">The AI OpenAI configuration.</param>
+    /// <param name="configuration">The configuration provider.</param>
     /// <param name="serviceProvider">The service provider.</param>
     /// <exception cref="ArgumentNullException">Thrown when any parameter is null.</exception>
     public TestController(
@@ -64,9 +61,7 @@ public class TestController : ControllerBase
         IUserController userController,
         IThrottleCache throttleCache,
         IHashProvider hashProvider,
-        IAITestingConfiguration aiTestingConfiguration,
-        IAIOllamaConfiguration aiOllamaConfiguration,
-        IAIOpenAIConfiguration aiOpenAIConfiguration,
+        IConfiguration configuration,
         IServiceProvider serviceProvider)
     {
         mEmailQueue = emailQueue ?? throw new ArgumentNullException(nameof(emailQueue));
@@ -78,9 +73,7 @@ public class TestController : ControllerBase
         mUserController = userController ?? throw new ArgumentNullException(nameof(userController));
         mThrottleCache = throttleCache ?? throw new ArgumentNullException(nameof(throttleCache));
         mHashProvider = hashProvider ?? throw new ArgumentNullException(nameof(hashProvider));
-        mAITestingConfiguration = aiTestingConfiguration ?? throw new ArgumentNullException(nameof(aiTestingConfiguration));
-        mAIOllamaConfiguration = aiOllamaConfiguration ?? throw new ArgumentNullException(nameof(aiOllamaConfiguration));
-        mAIOpenAIConfiguration = aiOpenAIConfiguration ?? throw new ArgumentNullException(nameof(aiOpenAIConfiguration));
+        mConfiguration = configuration ?? throw new ArgumentNullException(nameof(configuration));
         mServiceProvider = serviceProvider ?? throw new ArgumentNullException(nameof(serviceProvider));
     }
 
@@ -358,15 +351,17 @@ public class TestController : ControllerBase
     }
 
     /// <summary>
-    /// Tests AI driver validation with user input using specified driver.
+    /// Tests AI driver validation with user input using specified driver and configuration.
     /// Available only in Development and Testing environments.
     /// </summary>
     /// <param name="driver">The AI driver to use (mock, ollama, openai).</param>
+    /// <param name="config">The configuration name to use (e.g., mock, ollama-llama3, openai-gpt-4).</param>
     /// <param name="request">The validation test request.</param>
     /// <returns>The AI validation result.</returns>
-    [HttpPost("ai/validate/{driver}")]
+    [HttpPost("ai/validate/{driver}/{config}")]
     public async Task<IActionResult> TestAIValidation(
         string driver,
+        string config,
         [FromBody] AITestRequest request)
     {
         if (!IsAvailable())
@@ -383,12 +378,12 @@ public class TestController : ControllerBase
 
         driver = driver.ToLowerInvariant();
 
-        mLogger.LogInformation("Test: AI validation with driver={Driver}, inputLength={Length}",
-            driver, request.UserInput.Length);
+        mLogger.LogInformation("Test: AI validation with driver={Driver}, config={Config}, inputLength={Length}",
+            driver, config, request.UserInput.Length);
 
         try
         {
-            IAIDriver aiDriver = CreateAIDriver(driver);
+            IAIDriver aiDriver = CreateAIDriver(driver, config);
 
             Stopwatch stopwatch = Stopwatch.StartNew();
             AIResult result = await aiDriver.ValidateUserInputAsync(request.UserInput);
@@ -421,15 +416,17 @@ public class TestController : ControllerBase
     }
 
     /// <summary>
-    /// Tests AI driver suggestions with instructions and user input using specified driver.
+    /// Tests AI driver suggestions with instructions and user input using specified driver and configuration.
     /// Available only in Development and Testing environments.
     /// </summary>
     /// <param name="driver">The AI driver to use (mock, ollama, openai).</param>
+    /// <param name="config">The configuration name to use (e.g., mock, ollama-llama3, openai-gpt-4).</param>
     /// <param name="request">The suggestions test request.</param>
     /// <returns>The AI suggestions result.</returns>
-    [HttpPost("ai/suggestions/{driver}")]
+    [HttpPost("ai/suggestions/{driver}/{config}")]
     public async Task<IActionResult> TestAISuggestions(
         string driver,
+        string config,
         [FromBody] AITestRequest request)
     {
         if (!IsAvailable())
@@ -450,12 +447,12 @@ public class TestController : ControllerBase
         driver = driver.ToLowerInvariant();
 
         mLogger.LogInformation(
-            "Test: AI suggestions with driver={Driver}, instructionsLength={InstructionsLength}, inputLength={InputLength}",
-            driver, request.Instructions.Length, request.UserInput.Length);
+            "Test: AI suggestions with driver={Driver}, config={Config}, instructionsLength={InstructionsLength}, inputLength={InputLength}",
+            driver, config, request.Instructions.Length, request.UserInput.Length);
 
         try
         {
-            IAIDriver aiDriver = CreateAIDriver(driver);
+            IAIDriver aiDriver = CreateAIDriver(driver, config);
 
             Stopwatch stopwatch = Stopwatch.StartNew();
             AIResult result = await aiDriver.GetSuggestionsAsync(
@@ -490,29 +487,30 @@ public class TestController : ControllerBase
     }
 
     /// <summary>
-    /// Creates an AI driver instance based on the driver name.
+    /// Creates an AI driver instance based on the driver name and configuration.
     /// </summary>
     /// <param name="driver">The driver name (mock, ollama, openai).</param>
+    /// <param name="configName">The configuration name to use.</param>
     /// <returns>An instance of IAIDriver.</returns>
     /// <exception cref="InvalidOperationException">Thrown when driver type is not supported.</exception>
-    private IAIDriver CreateAIDriver(string driver)
+    private IAIDriver CreateAIDriver(string driver, string configName)
     {
         switch (driver)
         {
             case "mock":
                 return new AITestingDriver(
-                    mAITestingConfiguration,
+                    new AITestingConfiguration(mConfiguration, configName),
                     mServiceProvider.GetRequiredService<ILogger<AITestingDriver>>());
 
             case "ollama":
                 return new AIOllamaDriver(
-                    mAIOllamaConfiguration,
+                    new AIOllamaConfiguration(mConfiguration, configName),
                     new HttpClient(),
                     mServiceProvider.GetRequiredService<ILogger<AIOllamaDriver>>());
 
             case "openai":
                 return new AIOpenAIDriver(
-                    mAIOpenAIConfiguration,
+                    new AIOpenAIConfiguration(mConfiguration, configName),
                     new HttpClient(),
                     mServiceProvider.GetRequiredService<ILogger<AIOpenAIDriver>>());
 

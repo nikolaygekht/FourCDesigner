@@ -2,6 +2,7 @@ using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Text;
 using System.Text.Json;
+using System.Text.Json.Nodes;
 using Microsoft.Extensions.Logging;
 
 namespace Gehtsoft.FourCDesigner.Logic.AI.OpenAI;
@@ -57,12 +58,12 @@ public class AIOpenAIDriver : IAIDriver
         int keyLength = hasApiKey ? apiKey.Length : 0;
 
         mLogger.LogInformation(
-            "OpenAI driver initialized: URL={ServiceUrl}, HasApiKey={HasApiKey}, KeyLength={KeyLength}, Timeout={TimeoutSeconds}s, MaxTokens={MaxTokens}",
+            "OpenAI driver initialized: URL={ServiceUrl}, HasApiKey={HasApiKey}, KeyLength={KeyLength}, Timeout={TimeoutSeconds}s, Parameters={Parameters}",
             serviceUrl,
             hasApiKey,
             keyLength,
             mConfiguration.TimeoutSeconds,
-            mConfiguration.MaxTokens);
+            SerializeParametersForLogging(mConfiguration.Parameters));
 
         mHttpClient.BaseAddress = new Uri(serviceUrl);
         mHttpClient.DefaultRequestHeaders.Authorization =
@@ -120,31 +121,41 @@ public class AIOpenAIDriver : IAIDriver
             Uri? fullUrl = new Uri(mHttpClient.BaseAddress!, endpoint);
 
             mLogger.LogDebug(
-                "OpenAI request: BaseUrl={BaseUrl}, Endpoint={Endpoint}, FullUrl={FullUrl}, Model={Model}, MaxTokens={MaxTokens}",
+                "OpenAI request: BaseUrl={BaseUrl}, Endpoint={Endpoint}, FullUrl={FullUrl}, Model={Model}, Parameters={Parameters}",
                 mHttpClient.BaseAddress,
                 endpoint,
                 fullUrl,
                 mConfiguration.Model,
-                mConfiguration.MaxTokens);
+                SerializeParametersForLogging(mConfiguration.Parameters));
 
-            var requestBody = new
+            JsonObject requestBody = new JsonObject();
+            requestBody["model"] = mConfiguration.Model;
+            requestBody["messages"] = new JsonArray
             {
-                model = mConfiguration.Model,
-                messages = new[]
+                new JsonObject
                 {
-                    new { role = "system", content = systemPrompt },
-                    new { role = "user", content = userMessage }
+                    ["role"] = "system",
+                    ["content"] = systemPrompt
                 },
-                temperature = 0.7,
-                max_tokens = mConfiguration.MaxTokens
+                new JsonObject
+                {
+                    ["role"] = "user",
+                    ["content"] = userMessage
+                }
             };
 
-            string jsonRequest = JsonSerializer.Serialize(requestBody);
+            foreach (KeyValuePair<string, object> parameter in mConfiguration.Parameters)
+            {
+                requestBody[parameter.Key] = ConvertToJsonNode(parameter.Value);
+            }
+
+            string jsonRequest = requestBody.ToJsonString();
             HttpContent content = new StringContent(
                 jsonRequest,
                 Encoding.UTF8,
                 "application/json");
 
+            mLogger.LogDebug("OpenAI request body: {RequestBody}", jsonRequest);
             mLogger.LogDebug("OpenAI request body length: {Length} bytes", jsonRequest.Length);
 
             using (CancellationTokenSource cts = new CancellationTokenSource(
@@ -219,5 +230,67 @@ public class AIOpenAIDriver : IAIDriver
                 "OPENAI_UNEXPECTED_ERROR",
                 $"Unexpected error: {ex.Message}");
         }
+    }
+
+    /// <summary>
+    /// Serializes parameters dictionary to a JSON string for logging purposes.
+    /// </summary>
+    /// <param name="parameters">The parameters dictionary.</param>
+    /// <returns>A JSON string representation of the parameters.</returns>
+    private static string SerializeParametersForLogging(IReadOnlyDictionary<string, object> parameters)
+    {
+        if (parameters == null || parameters.Count == 0)
+            return "{}";
+
+        try
+        {
+            return JsonSerializer.Serialize(parameters, new JsonSerializerOptions
+            {
+                WriteIndented = false
+            });
+        }
+        catch
+        {
+            // Fallback to simple string representation if serialization fails
+            return string.Join(", ", parameters.Select(p => $"{p.Key}={p.Value}"));
+        }
+    }
+
+    /// <summary>
+    /// Converts a configuration value to a JsonNode, handling nested dictionaries recursively.
+    /// </summary>
+    /// <param name="value">The value to convert.</param>
+    /// <returns>A JsonNode representing the value.</returns>
+    private static JsonNode? ConvertToJsonNode(object value)
+    {
+        if (value == null)
+            return null;
+
+        // Handle primitive types
+        if (value is int intValue)
+            return JsonValue.Create(intValue);
+
+        if (value is double doubleValue)
+            return JsonValue.Create(doubleValue);
+
+        if (value is bool boolValue)
+            return JsonValue.Create(boolValue);
+
+        if (value is string stringValue)
+            return JsonValue.Create(stringValue);
+
+        // Handle nested dictionaries
+        if (value is Dictionary<string, object> dict)
+        {
+            JsonObject jsonObject = new JsonObject();
+            foreach (KeyValuePair<string, object> kvp in dict)
+            {
+                jsonObject[kvp.Key] = ConvertToJsonNode(kvp.Value);
+            }
+            return jsonObject;
+        }
+
+        // Fallback: convert to string
+        return JsonValue.Create(value.ToString());
     }
 }

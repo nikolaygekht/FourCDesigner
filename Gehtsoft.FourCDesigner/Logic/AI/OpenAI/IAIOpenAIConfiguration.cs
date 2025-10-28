@@ -21,12 +21,19 @@ public interface IAIOpenAIConfiguration
     string Model { get; }
 
     /// <summary>
-    /// Gets the maximum number of tokens to generate in responses.
-    /// </summary>
-    int MaxTokens { get; }
-
-    /// <summary>
     /// Gets the request timeout in seconds.
     /// </summary>
     int TimeoutSeconds { get; }
+
+    /// <summary>
+    /// Gets the custom parameters to send to the OpenAI API.
+    /// </summary>
+    /// <remarks>
+    /// This dictionary contains model-specific parameters such as:
+    /// - "max_tokens" (for GPT-3.5, GPT-4)
+    /// - "max_completion_tokens" (for GPT-5)
+    /// - "temperature"
+    /// - any other model-specific parameters
+    /// </remarks>
+    IReadOnlyDictionary<string, object> Parameters { get; }
 }

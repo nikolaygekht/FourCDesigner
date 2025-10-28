@@ -14,7 +14,7 @@ public class AITestingConfigurationTests
     public void Constructor_WithNullConfiguration_ShouldThrowArgumentNullException()
     {
         // Act
-        Action act = () => new AITestingConfiguration(null!);
+        Action act = () => new AITestingConfiguration(null!, "mock");
 
         // Assert
         act.Should().Throw<ArgumentNullException>()
@@ -26,7 +26,7 @@ public class AITestingConfigurationTests
     {
         // Arrange
         var configuration = new ConfigurationBuilder().Build();
-        var testingConfig = new AITestingConfiguration(configuration);
+        var testingConfig = new AITestingConfiguration(configuration, "mock");
 
         // Act
         string filePath = testingConfig.MockFilePath;
@@ -46,7 +46,7 @@ public class AITestingConfigurationTests
         var configuration = new ConfigurationBuilder()
             .AddInMemoryCollection(configData!)
             .Build();
-        var testingConfig = new AITestingConfiguration(configuration);
+        var testingConfig = new AITestingConfiguration(configuration, "mock");
 
         // Act
         string filePath = testingConfig.MockFilePath;
@@ -66,7 +66,7 @@ public class AITestingConfigurationTests
         var configuration = new ConfigurationBuilder()
             .AddInMemoryCollection(configData!)
             .Build();
-        var testingConfig = new AITestingConfiguration(configuration);
+        var testingConfig = new AITestingConfiguration(configuration, "mock");
 
         // Act
         string filePath = testingConfig.MockFilePath;
@@ -86,7 +86,7 @@ public class AITestingConfigurationTests
         var configuration = new ConfigurationBuilder()
             .AddInMemoryCollection(configData!)
             .Build();
-        var testingConfig = new AITestingConfiguration(configuration);
+        var testingConfig = new AITestingConfiguration(configuration, "mock");
 
         // Act
         string filePath = testingConfig.MockFilePath;

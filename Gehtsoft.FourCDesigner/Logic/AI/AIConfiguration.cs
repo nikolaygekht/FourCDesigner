@@ -29,7 +29,23 @@ public class AIConfiguration : IAIConfiguration
         {
             string? value = mConfiguration["ai:driver"];
             if (string.IsNullOrEmpty(value))
-                return "mock"; // Default to mock driver
+                return "mock";
+
+            return value;
+        }
+    }
+
+    /// <inheritdoc/>
+    public string Config
+    {
+        get
+        {
+            string? value = mConfiguration["ai:config"];
+            if (string.IsNullOrEmpty(value))
+            {
+                string driver = Driver.ToLowerInvariant();
+                return driver;
+            }
 
             return value;
         }

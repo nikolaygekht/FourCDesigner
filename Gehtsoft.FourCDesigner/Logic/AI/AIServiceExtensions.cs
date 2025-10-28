@@ -20,15 +20,6 @@ public static class AIServiceExtensions
         // Register main AI configuration
         services.AddSingleton<IAIConfiguration, AIConfiguration>();
 
-        // Register testing/mock driver configuration
-        services.AddSingleton<IAITestingConfiguration, AITestingConfiguration>();
-
-        // Register Ollama driver configuration
-        services.AddSingleton<IAIOllamaConfiguration, AIOllamaConfiguration>();
-
-        // Register OpenAI driver configuration
-        services.AddSingleton<IAIOpenAIConfiguration, AIOpenAIConfiguration>();
-
         // Register the factory as singleton
         services.AddSingleton<AIDriverFactory>();
 

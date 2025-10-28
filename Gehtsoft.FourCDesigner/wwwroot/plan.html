@@ -374,16 +374,21 @@
      <h2>Export Lesson Plan</h2>
      <p class="text-muted">Download or print your completed lesson plan.</p>
      <div class="export-actions mb-4">
-      <button type="button" class="btn btn-success me-2" data-action="export_html">Download as HTML</button>
-      <button type="button" class="btn btn-secondary" data-action="print_lesson">Print Lesson Plan</button>
+      <a href="/print.html" class="btn btn-primary me-2" target="_blank">Open Print View</a>
+      <button type="button" class="btn btn-secondary save-section-button">Save Current Progress</button>
      </div>
-     <div class="export-preview">
-      <h5>Preview</h5>
-      <div class="card">
-       <div class="card-body" id="export-preview-content">
-        <p class="text-muted">Your lesson plan preview will appear here.</p>
-       </div>
-      </div>
+     <div class="alert alert-info" role="alert">
+      <h5 class="alert-heading">How to Print or Save as PDF</h5>
+      <ol>
+       <li>Click "Open Print View" to open your lesson plan in a print-friendly format</li>
+       <li>In the print view, click "Print / Save as PDF" or use Ctrl+P (Cmd+P on Mac)</li>
+       <li>In the print dialog, you can either:
+        <ul>
+         <li>Select a printer to print the lesson plan</li>
+         <li>Choose "Save as PDF" or "Microsoft Print to PDF" to save as a PDF file</li>
+        </ul>
+       </li>
+      </ol>
      </div>
     </section>
    </div>

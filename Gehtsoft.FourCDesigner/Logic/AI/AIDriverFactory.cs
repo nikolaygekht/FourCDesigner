@@ -1,6 +1,7 @@
 using Gehtsoft.FourCDesigner.Logic.AI.Testing;
 using Gehtsoft.FourCDesigner.Logic.AI.Ollama;
 using Gehtsoft.FourCDesigner.Logic.AI.OpenAI;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
@@ -82,8 +83,13 @@ public class AIDriverFactory
     /// <returns>An instance of AITestingDriver.</returns>
     private IAIDriver CreateTestingDriver()
     {
+        IConfiguration configuration =
+            mServiceProvider.GetRequiredService<IConfiguration>();
+
+        string configName = mConfiguration.Config;
+
         IAITestingConfiguration config =
-            mServiceProvider.GetRequiredService<IAITestingConfiguration>();
+            new AITestingConfiguration(configuration, configName);
 
         ILogger<AITestingDriver> logger =
             mServiceProvider.GetRequiredService<ILogger<AITestingDriver>>();
@@ -97,8 +103,13 @@ public class AIDriverFactory
     /// <returns>An instance of AIOllamaDriver.</returns>
     private IAIDriver CreateOllamaDriver()
     {
+        IConfiguration configuration =
+            mServiceProvider.GetRequiredService<IConfiguration>();
+
+        string configName = mConfiguration.Config;
+
         IAIOllamaConfiguration config =
-            mServiceProvider.GetRequiredService<IAIOllamaConfiguration>();
+            new AIOllamaConfiguration(configuration, configName);
 
         HttpClient httpClient = new HttpClient();
 
@@ -114,8 +125,13 @@ public class AIDriverFactory
     /// <returns>An instance of AIOpenAIDriver.</returns>
     private IAIDriver CreateOpenAIDriver()
     {
+        IConfiguration configuration =
+            mServiceProvider.GetRequiredService<IConfiguration>();
+
+        string configName = mConfiguration.Config;
+
         IAIOpenAIConfiguration config =
-            mServiceProvider.GetRequiredService<IAIOpenAIConfiguration>();
+            new AIOpenAIConfiguration(configuration, configName);
 
         HttpClient httpClient = new HttpClient();
 
