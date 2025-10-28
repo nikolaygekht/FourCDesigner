@@ -32,6 +32,13 @@ public static class AIServiceExtensions
         // Register the factory as singleton
         services.AddSingleton<AIDriverFactory>();
 
+        // Register IAIDriver using the factory (scoped so each request gets same driver)
+        services.AddScoped<IAIDriver>(serviceProvider =>
+        {
+            var factory = serviceProvider.GetRequiredService<AIDriverFactory>();
+            return factory.CreateDriver();
+        });
+
         return services;
     }
 }

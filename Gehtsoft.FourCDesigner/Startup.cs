@@ -13,6 +13,7 @@ using Gehtsoft.FourCDesigner.Middleware.Throttling;
 using Gehtsoft.FourCDesigner.Utils;
 using Gehtsoft.FourCDesigner.Logic.Config;
 using Gehtsoft.FourCDesigner.Logic.AI;
+using Gehtsoft.FourCDesigner.Logic.Plan;
 
 namespace Gehtsoft.FourCDesigner
 {
@@ -73,6 +74,9 @@ namespace Gehtsoft.FourCDesigner
 
             // Register AI services (configurations, drivers, and factory)
             services.AddAIServices();
+
+            // Register plan services (prompt factory, formatter, AI controller)
+            services.AddPlanServices();
 
         }
 

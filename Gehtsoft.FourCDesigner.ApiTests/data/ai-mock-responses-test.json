@@ -1,0 +1,22 @@
+[
+  {
+    "Operation": "validate",
+    "RequestPattern": ".*",
+    "UserDataPattern": ".*",
+    "Response": {
+      "Successful": true,
+      "ErrorCode": "",
+      "Output": "Input validated successfully"
+    }
+  },
+  {
+    "Operation": "process",
+    "RequestPattern": ".*",
+    "UserDataPattern": ".*",
+    "Response": {
+      "Successful": true,
+      "ErrorCode": "",
+      "Output": "AI assistance provided successfully. Your lesson plan element has been reviewed and feedback is provided based on TBR methodology and 4C principles."
+    }
+  }
+]

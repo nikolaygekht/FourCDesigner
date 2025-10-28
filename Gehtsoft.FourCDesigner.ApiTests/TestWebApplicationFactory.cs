@@ -19,6 +19,7 @@ public class TestWebApplicationFactory : WebApplicationFactory<Program>
 {
     private readonly string mDatabaseName;
     private readonly MockSmtpSender mMockSmtpSender;
+    private readonly bool mEnableAITesting;
 
     /// <summary>
     /// Gets the mock SMTP sender that captures all emails sent during tests.
@@ -30,10 +31,12 @@ public class TestWebApplicationFactory : WebApplicationFactory<Program>
     /// Initializes a new instance of the <see cref="TestWebApplicationFactory"/> class.
     /// </summary>
     /// <param name="databaseName">The name of the in-memory database (must be unique per test).</param>
-    public TestWebApplicationFactory(string databaseName)
+    /// <param name="enableAITesting">Whether to enable AI testing driver instead of real AI.</param>
+    public TestWebApplicationFactory(string databaseName, bool enableAITesting = false)
     {
         mDatabaseName = databaseName ?? throw new ArgumentNullException(nameof(databaseName));
         mMockSmtpSender = new MockSmtpSender();
+        mEnableAITesting = enableAITesting;
     }
 
     /// <summary>
@@ -44,8 +47,7 @@ public class TestWebApplicationFactory : WebApplicationFactory<Program>
     {
         builder.ConfigureAppConfiguration((context, config) =>
         {
-            // Override database configuration with in-memory SQLite
-            config.AddInMemoryCollection(new Dictionary<string, string>
+            var configValues = new Dictionary<string, string>
             {
                 ["db:driver"] = "sqlite",
                 ["db:connectionString"] = $"Data Source={mDatabaseName};Mode=Memory;Cache=Shared",
@@ -59,7 +61,16 @@ public class TestWebApplicationFactory : WebApplicationFactory<Program>
                 ["Serilog:WriteTo:0:Name"] = "File",
                 ["Serilog:WriteTo:0:Args:path"] = "./logs/api-test-log.txt",
                 ["Serilog:WriteTo:0:Args:rollingInterval"] = "Day"
-            });
+            };
+
+            // If AI testing is enabled, configure the AI driver to use mock mode
+            if (mEnableAITesting)
+            {
+                configValues["ai:driver"] = "mock";
+                configValues["ai:mock:file"] = "./data/ai-mock-responses-test.json";
+            }
+
+            config.AddInMemoryCollection(configValues!);
         });
 
         builder.ConfigureLogging(logging =>

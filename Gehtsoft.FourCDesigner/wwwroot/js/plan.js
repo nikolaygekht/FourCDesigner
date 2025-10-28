@@ -408,187 +408,244 @@
  // ============================================
 
  /**
-  * Dummy operation that simulates an async AI call
+  * Calls the plan assistance API
   * @param {string} operationId - The operation identifier
-  * @param {Object} cancelToken - Token to check if operation was cancelled
-  * @returns {Promise<string>} - Result text
+  * @returns {Promise<string>} - Result text from AI
   */
- function dummyOperation(operationId, cancelToken) {
+ function callPlanApi(operationId) {
   return new Promise(function(resolve, reject) {
-   setTimeout(function() {
-    if (cancelToken.cancelled) {
-     reject(new Error('Operation cancelled'));
-    } else {
-     resolve('Result from ' + operationId);
+   // Get session ID from localStorage (server will validate if needed)
+   const sessionId = localStorage.getItem('sessionId') || '';
+
+   // Collect current lesson plan data
+   const lessonPlan = collectLessonData();
+
+   // Prepare request payload
+   const requestData = {
+    operationId: operationId,
+    plan: lessonPlan
+   };
+
+   // Make API call
+   fetch('/api/plan/assistance', {
+    method: 'POST',
+    headers: {
+     'Content-Type': 'application/json',
+     'X-fourc-session': sessionId
+    },
+    body: JSON.stringify(requestData)
+   })
+   .then(function(response) {
+    if (!response.ok) {
+     // Provide user-friendly error messages based on status code
+     var errorMessage;
+     switch (response.status) {
+      case 401:
+       errorMessage = 'Authentication required. Please log in.';
+       break;
+      case 403:
+       errorMessage = 'Access denied. You do not have permission to perform this action.';
+       break;
+      case 429:
+       errorMessage = 'Too many requests. Please wait a moment and try again.';
+       break;
+      case 500:
+       errorMessage = 'Server error. Please try again later.';
+       break;
+      case 503:
+       errorMessage = 'Service temporarily unavailable. Please try again later.';
+       break;
+      default:
+       errorMessage = 'Request failed. Please try again.';
+     }
+
+     // Try to get more specific error from response
+     return response.json().then(function(data) {
+      throw new Error(data.error || errorMessage);
+     }).catch(function(jsonError) {
+      // If JSON parsing fails, use the default message
+      throw new Error(errorMessage);
+     });
     }
-   }, 1000);
+    return response.json();
+   })
+   .then(function(result) {
+    if (result.successful) {
+     resolve(result.output);
+    } else {
+     reject(new Error(result.errorCode + ': ' + result.output));
+    }
+   })
+   .catch(function(error) {
+    reject(error);
+   });
   });
  }
 
  // Review operations
  function reviewTopic() {
-  return dummyOperation('review_topic', { cancelled: false });
+  return callPlanApi('review_topic');
  }
 
  function reviewAudience() {
-  return dummyOperation('review_audience', { cancelled: false });
+  return callPlanApi('review_audience');
  }
 
  function reviewOutcomes() {
-  return dummyOperation('review_outcomes', { cancelled: false });
+  return callPlanApi('review_outcomes');
  }
 
  function reviewConnGoal() {
-  return dummyOperation('review_conn_goal', { cancelled: false });
+  return callPlanApi('review_conn_goal');
  }
 
  function reviewConnActivities() {
-  return dummyOperation('review_conn_activities', { cancelled: false });
+  return callPlanApi('review_conn_activities');
  }
 
  function reviewConnMaterials() {
-  return dummyOperation('review_conn_materials', { cancelled: false });
+  return callPlanApi('review_conn_materials');
  }
 
  function reviewConceptsNeedToKnow() {
-  return dummyOperation('review_concepts_needToKnow', { cancelled: false });
+  return callPlanApi('review_concepts_needToKnow');
  }
 
  function reviewConceptsGoodToKnow() {
-  return dummyOperation('review_concepts_goodToKnow', { cancelled: false });
+  return callPlanApi('review_concepts_goodToKnow');
  }
 
  function reviewConceptsTheses() {
-  return dummyOperation('review_concepts_theses', { cancelled: false });
+  return callPlanApi('review_concepts_theses');
  }
 
  function reviewConceptsStructure() {
-  return dummyOperation('review_concepts_structure', { cancelled: false });
+  return callPlanApi('review_concepts_structure');
  }
 
  function reviewConceptsActivities() {
-  return dummyOperation('review_concepts_activities', { cancelled: false });
+  return callPlanApi('review_concepts_activities');
  }
 
  function reviewConceptsMaterials() {
-  return dummyOperation('review_concepts_materials', { cancelled: false });
+  return callPlanApi('review_concepts_materials');
  }
 
  function reviewPracticeOutput() {
-  return dummyOperation('review_practice_output', { cancelled: false });
+  return callPlanApi('review_practice_output');
  }
 
  function reviewPracticeFocus() {
-  return dummyOperation('review_practice_focus', { cancelled: false });
+  return callPlanApi('review_practice_focus');
  }
 
  function reviewPracticeActivities() {
-  return dummyOperation('review_practice_activities', { cancelled: false });
+  return callPlanApi('review_practice_activities');
  }
 
  function reviewPracticeDetails() {
-  return dummyOperation('review_practice_details', { cancelled: false });
+  return callPlanApi('review_practice_details');
  }
 
  function reviewPracticeMaterials() {
-  return dummyOperation('review_practice_materials', { cancelled: false });
+  return callPlanApi('review_practice_materials');
  }
 
  function reviewConclGoal() {
-  return dummyOperation('review_concl_goal', { cancelled: false });
+  return callPlanApi('review_concl_goal');
  }
 
  function reviewConclActivities() {
-  return dummyOperation('review_concl_activities', { cancelled: false });
+  return callPlanApi('review_concl_activities');
  }
 
  function reviewConclMaterials() {
-  return dummyOperation('review_concl_materials', { cancelled: false });
+  return callPlanApi('review_concl_materials');
  }
 
  function reviewWholeLesson() {
-  return dummyOperation('review_whole_lesson', { cancelled: false });
+  return callPlanApi('review_whole_lesson');
  }
 
  // Suggest operations
  function suggestTopic() {
-  return dummyOperation('suggest_topic', { cancelled: false });
+  return callPlanApi('suggest_topic');
  }
 
  function suggestAudience() {
-  return dummyOperation('suggest_audience', { cancelled: false });
+  return callPlanApi('suggest_audience');
  }
 
  function suggestOutcomes() {
-  return dummyOperation('suggest_outcomes', { cancelled: false });
+  return callPlanApi('suggest_outcomes');
  }
 
  function suggestConnGoal() {
-  return dummyOperation('suggest_conn_goal', { cancelled: false });
+  return callPlanApi('suggest_conn_goal');
  }
 
  function suggestConnActivities() {
-  return dummyOperation('suggest_conn_activities', { cancelled: false });
+  return callPlanApi('suggest_conn_activities');
  }
 
  function suggestConnMaterials() {
-  return dummyOperation('suggest_conn_materials', { cancelled: false });
+  return callPlanApi('suggest_conn_materials');
  }
 
  function suggestConceptsNeedToKnow() {
-  return dummyOperation('suggest_concepts_needToKnow', { cancelled: false });
+  return callPlanApi('suggest_concepts_needToKnow');
  }
 
  function suggestConceptsGoodToKnow() {
-  return dummyOperation('suggest_concepts_goodToKnow', { cancelled: false });
+  return callPlanApi('suggest_concepts_goodToKnow');
  }
 
  function suggestConceptsTheses() {
-  return dummyOperation('suggest_concepts_theses', { cancelled: false });
+  return callPlanApi('suggest_concepts_theses');
  }
 
  function suggestConceptsStructure() {
-  return dummyOperation('suggest_concepts_structure', { cancelled: false });
+  return callPlanApi('suggest_concepts_structure');
  }
 
  function suggestConceptsActivities() {
-  return dummyOperation('suggest_concepts_activities', { cancelled: false });
+  return callPlanApi('suggest_concepts_activities');
  }
 
  function suggestConceptsMaterials() {
-  return dummyOperation('suggest_concepts_materials', { cancelled: false });
+  return callPlanApi('suggest_concepts_materials');
  }
 
  function suggestPracticeOutput() {
-  return dummyOperation('suggest_practice_output', { cancelled: false });
+  return callPlanApi('suggest_practice_output');
  }
 
  function suggestPracticeFocus() {
-  return dummyOperation('suggest_practice_focus', { cancelled: false });
+  return callPlanApi('suggest_practice_focus');
  }
 
  function suggestPracticeActivities() {
-  return dummyOperation('suggest_practice_activities', { cancelled: false });
+  return callPlanApi('suggest_practice_activities');
  }
 
  function suggestPracticeDetails() {
-  return dummyOperation('suggest_practice_details', { cancelled: false });
+  return callPlanApi('suggest_practice_details');
  }
 
  function suggestPracticeMaterials() {
-  return dummyOperation('suggest_practice_materials', { cancelled: false });
+  return callPlanApi('suggest_practice_materials');
  }
 
  function suggestConclGoal() {
-  return dummyOperation('suggest_concl_goal', { cancelled: false });
+  return callPlanApi('suggest_concl_goal');
  }
 
  function suggestConclActivities() {
-  return dummyOperation('suggest_concl_activities', { cancelled: false });
+  return callPlanApi('suggest_concl_activities');
  }
 
  function suggestConclMaterials() {
-  return dummyOperation('suggest_concl_materials', { cancelled: false });
+  return callPlanApi('suggest_concl_materials');
  }
 
  // ============================================
@@ -658,7 +715,24 @@
   const modal = document.getElementById('ai-assist-modal');
   const loadingDiv = document.getElementById('ai-assist-loading');
   const resultDiv = document.getElementById('ai-assist-result');
+  const resultText = document.getElementById('ai-assist-result-text');
   const actionButtons = document.getElementById('ai-assist-action-buttons');
+
+  // Reset loading div to show spinner and progress text
+  const spinner = loadingDiv.querySelector('.spinner-border');
+  const textSpan = loadingDiv.querySelector('span:not(.visually-hidden)');
+  if (spinner) {
+   spinner.style.display = '';
+  }
+  if (textSpan) {
+   textSpan.textContent = 'The request is in progress...';
+   textSpan.style.color = '';
+  }
+
+  // Clear previous result content to prevent flashing
+  if (resultText) {
+   resultText.innerHTML = '';
+  }
 
   loadingDiv.style.display = 'block';
   resultDiv.style.display = 'none';
@@ -670,6 +744,32 @@
   currentModalInstance.show();
 
   return currentModalInstance;
+ }
+
+ /**
+  * Formats text with basic markdown-style formatting to HTML
+  * @param {string} text - The text to format
+  * @returns {string} - Formatted HTML
+  */
+ function formatTextToHtml(text) {
+  // Escape HTML to prevent injection
+  var escaped = text
+   .replace(/&/g, '&amp;')
+   .replace(/</g, '&lt;')
+   .replace(/>/g, '&gt;')
+   .replace(/"/g, '&quot;')
+   .replace(/'/g, '&#039;');
+
+  // Format headings: # text -> larger bold text with line break
+  escaped = escaped.replace(/^#\s+(.+)$/gm, '<span style="font-size: 1.2em;"><b>$1</b></span><br>');
+
+  // Format bold: **text** -> <b>text</b>
+  escaped = escaped.replace(/\*\*([^\*]+)\*\*/g, '<b>$1</b>');
+
+  // Convert newlines to <br>
+  escaped = escaped.replace(/\n/g, '<br>');
+
+  return escaped;
  }
 
  /**
@@ -686,7 +786,7 @@
 
   loadingDiv.style.display = 'none';
   resultDiv.style.display = 'block';
-  resultText.textContent = text;
+  resultText.innerHTML = formatTextToHtml(text);
 
   if (fieldId) {
    actionButtons.style.display = 'inline-block';
@@ -707,6 +807,13 @@
   if (currentModalInstance) {
    currentModalInstance.hide();
   }
+
+  // Clear result content to prevent showing stale data on next open
+  const resultText = document.getElementById('ai-assist-result-text');
+  if (resultText) {
+   resultText.innerHTML = '';
+  }
+
   currentFieldId = null;
   currentResultText = null;
  }
@@ -758,6 +865,24 @@
  // ============================================
 
  /**
+  * Shows error message in the loading div
+  * @param {string} errorMessage - The error message to display
+  */
+ function showErrorInLoadingDiv(errorMessage) {
+  const loadingDiv = document.getElementById('ai-assist-loading');
+  const spinner = loadingDiv.querySelector('.spinner-border');
+  const textSpan = loadingDiv.querySelector('span:not(.visually-hidden)');
+
+  if (spinner) {
+   spinner.style.display = 'none';
+  }
+  if (textSpan) {
+   textSpan.textContent = 'Error: ' + errorMessage;
+   textSpan.style.color = '#dc3545'; // Bootstrap danger color
+  }
+ }
+
+ /**
   * Main handler for AI assist button clicks
   * @param {string} operationId - The operation identifier
   */
@@ -779,8 +904,7 @@
    })
    .catch(function(error) {
     console.error('Operation failed:', error);
-    closeModal();
-    showNotification('Operation failed: ' + error.message, 'error');
+    showErrorInLoadingDiv(error.message);
    });
  }
 
