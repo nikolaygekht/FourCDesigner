@@ -1,9 +1,11 @@
 TBD:
-* Implement 4C controller
-* Implement 4C Web API
-* Design 4C UI
-* Implement 4C UI
-
+* fine-tune prompots to take:
+    * topic
+    * context
+    * audience
+    * timing (!)
+    into account
+* deploy to home.gekht.us
 
 
 
