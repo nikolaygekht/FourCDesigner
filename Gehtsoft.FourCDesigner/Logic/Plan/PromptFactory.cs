@@ -100,6 +100,10 @@ Learning outcomes are specific statements of what students will be able to do wh
     private static readonly PromptTemplate[] gPromptTemplates =
     [
         // Overview Section
+        new PromptTemplate(RequestId.ReviewContext, RequestType.Review, "Review the lesson context for completeness and clarity. Does it provide sufficient background information about the prequisites, intent, scope, limitations, and conditions of the lesson? Will it help you understand the lesson designer's intent to avoid guesswork? Provide critical feedback."),
+
+        new PromptTemplate(RequestId.SuggestContext, RequestType.Suggest, "Suggest context information that would help clarify the lesson designer's purpose, intent, scope, limitations, prequisities, and conditions. What background information would be most useful?"),
+
         new PromptTemplate(RequestId.ReviewTopic, RequestType.Review, "Review the lesson topic for clarity and appropriateness for TBR methodology. Is it clear, focused, and suitable for a structured learning experience? Provide critical feedback on its strengths and weaknesses."),
 
         new PromptTemplate(RequestId.SuggestTopic, RequestType.Suggest, "Based on the current topic, suggest specific improvements to make it clearer, more focused, and better aligned with TBR principles. Ask clarifying questions if needed."),
@@ -213,7 +217,14 @@ Learning outcomes are specific statements of what students will be able to do wh
     /// <returns>The complete prompt text.</returns>
     private static string BuildFullPrompt(PromptTemplate template)
     {
-        string basePrompt = $"{gAiRole}\n\n{gContext}\n\n## Your Task\n\n{template.Instruction}\n\nBased on the lesson plan information provided by the user, provide your response.";
+        string contextNote = "\n\n**CRITICAL**: The user provided a 'Context' field containing important " +
+                            "background information about the lesson plan. This context explains the purpose, intent, " +
+                            "scope, limitations, and conditions of the lesson. You MUST carefully review and consider this " +
+                            "context in all your responses to understand what the lesson designer is trying to achieve and avoid " +
+                            "making assumptions or guesses about their intent or create output that goes beyond the scope and context " +
+                            "defined.";
+
+        string basePrompt = $"{gAiRole}\n\n{gContext}{contextNote}\n\n## Your Task\n\n{template.Instruction}\n\nBased on the lesson plan information provided by the user, provide your response.";
 
         // For suggest operations, add instruction to return only the value without explanations
         if (template.Type == RequestType.Suggest)

@@ -2,11 +2,21 @@ namespace Gehtsoft.FourCDesigner.Logic.Plan;
 
 /// <summary>
 /// Identifies AI assistance operations for the 4C Instructional Design Tool.
-/// Total of 41 operations organized by lesson phase and operation type (review/suggest).
+/// Total of 43 operations organized by lesson phase and operation type (review/suggest).
 /// </summary>
 public enum RequestId
 {
-    // Overview Section (6 operations)
+    // Overview Section (8 operations)
+
+    /// <summary>
+    /// Review if context provides sufficient background information.
+    /// </summary>
+    ReviewContext,
+
+    /// <summary>
+    /// Suggest context information that would help clarify intent and scope.
+    /// </summary>
+    SuggestContext,
 
     /// <summary>
     /// Review if topic is clear and appropriate for TBR methodology.

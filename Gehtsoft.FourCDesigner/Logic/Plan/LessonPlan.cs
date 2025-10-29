@@ -9,6 +9,14 @@ namespace Gehtsoft.FourCDesigner.Logic.Plan;
 public class LessonPlan
 {
     /// <summary>
+    /// Gets or sets the context of the lesson.
+    /// Important information about the plan required to properly understand the intent of the lesson designer.
+    /// This includes purpose, intent, scope, limitations, and conditions of the lesson.
+    /// </summary>
+    [JsonPropertyName("context")]
+    public string Context { get; set; }
+
+    /// <summary>
     /// Gets or sets the topic of the lesson.
     /// A short description of the desired purpose of the lesson.
     /// </summary>
@@ -58,6 +66,7 @@ public class LessonPlan
     /// </summary>
     public LessonPlan()
     {
+        Context = string.Empty;
         Topic = string.Empty;
         Audience = string.Empty;
         LearningOutcomes = string.Empty;

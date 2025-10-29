@@ -36,32 +36,45 @@ public class LessonPlanFormatter : ILessonPlanFormatter
         Dictionary<RequestId, FormatConfiguration> configs = new Dictionary<RequestId, FormatConfiguration>();
 
         // Overview Section
+        configs[RequestId.ReviewContext] = new FormatConfiguration()
+            .Add("Context to Review", p => p.Context);
+
+        configs[RequestId.SuggestContext] = new FormatConfiguration()
+            .Add("Current Context", p => p.Context);
+
         configs[RequestId.ReviewTopic] = new FormatConfiguration()
+            .Add("Context", p => p.Context)
             .Add("Topic to Review", p => p.Topic);
 
         configs[RequestId.SuggestTopic] = new FormatConfiguration()
+            .Add("Context", p => p.Context)
             .Add("Current Topic", p => p.Topic);
 
         configs[RequestId.ReviewAudience] = new FormatConfiguration()
+            .Add("Context", p => p.Context)
             .Add("Topic", p => p.Topic)
             .Add("Audience to Review", p => p.Audience);
 
         configs[RequestId.SuggestAudience] = new FormatConfiguration()
+            .Add("Context", p => p.Context)
             .Add("Topic", p => p.Topic)
             .Add("Current Audience Description", p => p.Audience);
 
         configs[RequestId.ReviewOutcomes] = new FormatConfiguration()
+            .Add("Context", p => p.Context)
             .Add("Topic", p => p.Topic)
             .Add("Audience", p => p.Audience)
             .Add("Learning Outcomes to Review", p => p.LearningOutcomes);
 
         configs[RequestId.SuggestOutcomes] = new FormatConfiguration()
+            .Add("Context", p => p.Context)
             .Add("Topic", p => p.Topic)
             .Add("Audience", p => p.Audience)
             .Add("Current Learning Outcomes", p => p.LearningOutcomes);
 
         // Connection Phase
         configs[RequestId.ReviewConnGoal] = new FormatConfiguration()
+            .Add("Context", p => p.Context)
             .Add("Topic", p => p.Topic)
             .Add("Audience", p => p.Audience)
             .Add("Learning Outcomes", p => p.LearningOutcomes)
@@ -69,12 +82,14 @@ public class LessonPlanFormatter : ILessonPlanFormatter
             .Add("Connection Goal to Review", p => p.Connections.Goal);
 
         configs[RequestId.SuggestConnGoal] = new FormatConfiguration()
+            .Add("Context", p => p.Context)
             .Add("Topic", p => p.Topic)
             .Add("Audience", p => p.Audience)
             .Add("Learning Outcomes", p => p.LearningOutcomes)
             .Add("Connection Phase Timing", p => $"{p.Connections.Timing} minutes");
 
         configs[RequestId.ReviewConnActivities] = new FormatConfiguration()
+            .Add("Context", p => p.Context)
             .Add("Topic", p => p.Topic)
             .Add("Audience", p => p.Audience)
             .Add("Learning Outcomes", p => p.LearningOutcomes)
@@ -83,6 +98,7 @@ public class LessonPlanFormatter : ILessonPlanFormatter
             .Add("Connection Activities to Review", p => p.Connections.Activities);
 
         configs[RequestId.SuggestConnActivities] = new FormatConfiguration()
+            .Add("Context", p => p.Context)
             .Add("Topic", p => p.Topic)
             .Add("Audience", p => p.Audience)
             .Add("Learning Outcomes", p => p.LearningOutcomes)
@@ -90,6 +106,7 @@ public class LessonPlanFormatter : ILessonPlanFormatter
             .Add("Connection Goal", p => p.Connections.Goal);
 
         configs[RequestId.ReviewConnMaterials] = new FormatConfiguration()
+            .Add("Context", p => p.Context)
             .Add("Topic", p => p.Topic)
             .Add("Audience", p => p.Audience)
             .Add("Connection Phase Timing", p => $"{p.Connections.Timing} minutes")
@@ -98,6 +115,7 @@ public class LessonPlanFormatter : ILessonPlanFormatter
             .Add("Materials to Review", p => p.Connections.MaterialsToPrepare);
 
         configs[RequestId.SuggestConnMaterials] = new FormatConfiguration()
+            .Add("Context", p => p.Context)
             .Add("Topic", p => p.Topic)
             .Add("Audience", p => p.Audience)
             .Add("Connection Phase Timing", p => $"{p.Connections.Timing} minutes")
@@ -106,6 +124,7 @@ public class LessonPlanFormatter : ILessonPlanFormatter
 
         // Concepts Phase
         configs[RequestId.ReviewConceptsNeedToKnow] = new FormatConfiguration()
+            .Add("Context", p => p.Context)
             .Add("Topic", p => p.Topic)
             .Add("Audience", p => p.Audience)
             .Add("Learning Outcomes", p => p.LearningOutcomes)
@@ -113,12 +132,14 @@ public class LessonPlanFormatter : ILessonPlanFormatter
             .Add("Need to Know Concepts to Review", p => p.Concepts.NeedToKnow);
 
         configs[RequestId.SuggestConceptsNeedToKnow] = new FormatConfiguration()
+            .Add("Context", p => p.Context)
             .Add("Topic", p => p.Topic)
             .Add("Audience", p => p.Audience)
             .Add("Learning Outcomes", p => p.LearningOutcomes)
             .Add("Concepts Phase Timing", p => $"{p.Concepts.Timing} minutes");
 
         configs[RequestId.ReviewConceptsGoodToKnow] = new FormatConfiguration()
+            .Add("Context", p => p.Context)
             .Add("Topic", p => p.Topic)
             .Add("Audience", p => p.Audience)
             .Add("Learning Outcomes", p => p.LearningOutcomes)
@@ -127,6 +148,7 @@ public class LessonPlanFormatter : ILessonPlanFormatter
             .Add("Good to Know Concepts to Review", p => p.Concepts.GoodToKnow);
 
         configs[RequestId.SuggestConceptsGoodToKnow] = new FormatConfiguration()
+            .Add("Context", p => p.Context)
             .Add("Topic", p => p.Topic)
             .Add("Audience", p => p.Audience)
             .Add("Learning Outcomes", p => p.LearningOutcomes)
@@ -134,6 +156,7 @@ public class LessonPlanFormatter : ILessonPlanFormatter
             .Add("Need to Know Concepts", p => p.Concepts.NeedToKnow);
 
         configs[RequestId.ReviewConceptsTheses] = new FormatConfiguration()
+            .Add("Context", p => p.Context)
             .Add("Topic", p => p.Topic)
             .Add("Audience", p => p.Audience)
             .Add("Concepts Phase Timing", p => $"{p.Concepts.Timing} minutes")
@@ -142,6 +165,7 @@ public class LessonPlanFormatter : ILessonPlanFormatter
             .Add("Theses to Review", p => p.Concepts.Theses);
 
         configs[RequestId.SuggestConceptsTheses] = new FormatConfiguration()
+            .Add("Context", p => p.Context)
             .Add("Topic", p => p.Topic)
             .Add("Audience", p => p.Audience)
             .Add("Concepts Phase Timing", p => $"{p.Concepts.Timing} minutes")
@@ -149,6 +173,7 @@ public class LessonPlanFormatter : ILessonPlanFormatter
             .Add("Good to Know Concepts", p => p.Concepts.GoodToKnow);
 
         configs[RequestId.ReviewConceptsStructure] = new FormatConfiguration()
+            .Add("Context", p => p.Context)
             .Add("Topic", p => p.Topic)
             .Add("Audience", p => p.Audience)
             .Add("Concepts Phase Timing", p => $"{p.Concepts.Timing} minutes")
@@ -156,12 +181,14 @@ public class LessonPlanFormatter : ILessonPlanFormatter
             .Add("Structure to Review", p => p.Concepts.Structure);
 
         configs[RequestId.SuggestConceptsStructure] = new FormatConfiguration()
+            .Add("Context", p => p.Context)
             .Add("Topic", p => p.Topic)
             .Add("Audience", p => p.Audience)
             .Add("Concepts Phase Timing", p => $"{p.Concepts.Timing} minutes")
             .Add("Theses", p => p.Concepts.Theses);
 
         configs[RequestId.ReviewConceptsActivities] = new FormatConfiguration()
+            .Add("Context", p => p.Context)
             .Add("Topic", p => p.Topic)
             .Add("Audience", p => p.Audience)
             .Add("Concepts Phase Timing", p => $"{p.Concepts.Timing} minutes")
@@ -171,6 +198,7 @@ public class LessonPlanFormatter : ILessonPlanFormatter
             .Add("Activities to Review", p => p.Concepts.Activities);
 
         configs[RequestId.SuggestConceptsActivities] = new FormatConfiguration()
+            .Add("Context", p => p.Context)
             .Add("Topic", p => p.Topic)
             .Add("Audience", p => p.Audience)
             .Add("Concepts Phase Timing", p => $"{p.Concepts.Timing} minutes")
@@ -179,18 +207,21 @@ public class LessonPlanFormatter : ILessonPlanFormatter
             .Add("Structure", p => p.Concepts.Structure);
 
         configs[RequestId.ReviewConceptsMaterials] = new FormatConfiguration()
+            .Add("Context", p => p.Context)
             .Add("Topic", p => p.Topic)
             .Add("Concepts Phase Timing", p => $"{p.Concepts.Timing} minutes")
             .Add("Activities", p => p.Concepts.Activities)
             .Add("Materials to Review", p => p.Concepts.MaterialsToPrepare);
 
         configs[RequestId.SuggestConceptsMaterials] = new FormatConfiguration()
+            .Add("Context", p => p.Context)
             .Add("Topic", p => p.Topic)
             .Add("Concepts Phase Timing", p => $"{p.Concepts.Timing} minutes")
             .Add("Activities", p => p.Concepts.Activities);
 
         // Concrete Practice Phase
         configs[RequestId.ReviewPracticeOutput] = new FormatConfiguration()
+            .Add("Context", p => p.Context)
             .Add("Topic", p => p.Topic)
             .Add("Audience", p => p.Audience)
             .Add("Learning Outcomes", p => p.LearningOutcomes)
@@ -199,6 +230,7 @@ public class LessonPlanFormatter : ILessonPlanFormatter
             .Add("Desired Output to Review", p => p.ConcretePractice.DesiredOutput);
 
         configs[RequestId.SuggestPracticeOutput] = new FormatConfiguration()
+            .Add("Context", p => p.Context)
             .Add("Topic", p => p.Topic)
             .Add("Audience", p => p.Audience)
             .Add("Learning Outcomes", p => p.LearningOutcomes)
@@ -206,6 +238,7 @@ public class LessonPlanFormatter : ILessonPlanFormatter
             .Add("Need to Know Concepts", p => p.Concepts.NeedToKnow);
 
         configs[RequestId.ReviewPracticeFocus] = new FormatConfiguration()
+            .Add("Context", p => p.Context)
             .Add("Topic", p => p.Topic)
             .Add("Audience", p => p.Audience)
             .Add("Learning Outcomes", p => p.LearningOutcomes)
@@ -214,6 +247,7 @@ public class LessonPlanFormatter : ILessonPlanFormatter
             .Add("Focus Area to Review", p => p.ConcretePractice.FocusArea);
 
         configs[RequestId.SuggestPracticeFocus] = new FormatConfiguration()
+            .Add("Context", p => p.Context)
             .Add("Topic", p => p.Topic)
             .Add("Audience", p => p.Audience)
             .Add("Learning Outcomes", p => p.LearningOutcomes)
@@ -221,6 +255,7 @@ public class LessonPlanFormatter : ILessonPlanFormatter
             .Add("Desired Output", p => p.ConcretePractice.DesiredOutput);
 
         configs[RequestId.ReviewPracticeActivities] = new FormatConfiguration()
+            .Add("Context", p => p.Context)
             .Add("Topic", p => p.Topic)
             .Add("Audience", p => p.Audience)
             .Add("Practice Phase Timing", p => $"{p.ConcretePractice.Timing} minutes")
@@ -229,6 +264,7 @@ public class LessonPlanFormatter : ILessonPlanFormatter
             .Add("Activities to Review", p => p.ConcretePractice.Activities);
 
         configs[RequestId.SuggestPracticeActivities] = new FormatConfiguration()
+            .Add("Context", p => p.Context)
             .Add("Topic", p => p.Topic)
             .Add("Audience", p => p.Audience)
             .Add("Practice Phase Timing", p => $"{p.ConcretePractice.Timing} minutes")
@@ -236,6 +272,7 @@ public class LessonPlanFormatter : ILessonPlanFormatter
             .Add("Focus Area", p => p.ConcretePractice.FocusArea);
 
         configs[RequestId.ReviewPracticeDetails] = new FormatConfiguration()
+            .Add("Context", p => p.Context)
             .Add("Topic", p => p.Topic)
             .Add("Audience", p => p.Audience)
             .Add("Practice Phase Timing", p => $"{p.ConcretePractice.Timing} minutes")
@@ -245,6 +282,7 @@ public class LessonPlanFormatter : ILessonPlanFormatter
             .Add("Details to Review", p => p.ConcretePractice.Details);
 
         configs[RequestId.SuggestPracticeDetails] = new FormatConfiguration()
+            .Add("Context", p => p.Context)
             .Add("Topic", p => p.Topic)
             .Add("Audience", p => p.Audience)
             .Add("Practice Phase Timing", p => $"{p.ConcretePractice.Timing} minutes")
@@ -253,6 +291,7 @@ public class LessonPlanFormatter : ILessonPlanFormatter
             .Add("Activities", p => p.ConcretePractice.Activities);
 
         configs[RequestId.ReviewPracticeMaterials] = new FormatConfiguration()
+            .Add("Context", p => p.Context)
             .Add("Topic", p => p.Topic)
             .Add("Practice Phase Timing", p => $"{p.ConcretePractice.Timing} minutes")
             .Add("Activities", p => p.ConcretePractice.Activities)
@@ -260,6 +299,7 @@ public class LessonPlanFormatter : ILessonPlanFormatter
             .Add("Materials to Review", p => p.ConcretePractice.MaterialsToPrepare);
 
         configs[RequestId.SuggestPracticeMaterials] = new FormatConfiguration()
+            .Add("Context", p => p.Context)
             .Add("Topic", p => p.Topic)
             .Add("Practice Phase Timing", p => $"{p.ConcretePractice.Timing} minutes")
             .Add("Activities", p => p.ConcretePractice.Activities)
@@ -267,6 +307,7 @@ public class LessonPlanFormatter : ILessonPlanFormatter
 
         // Conclusion Phase
         configs[RequestId.ReviewConclGoal] = new FormatConfiguration()
+            .Add("Context", p => p.Context)
             .Add("Topic", p => p.Topic)
             .Add("Audience", p => p.Audience)
             .Add("Learning Outcomes", p => p.LearningOutcomes)
@@ -274,12 +315,14 @@ public class LessonPlanFormatter : ILessonPlanFormatter
             .Add("Conclusion Goal to Review", p => p.Conclusions.Goal);
 
         configs[RequestId.SuggestConclGoal] = new FormatConfiguration()
+            .Add("Context", p => p.Context)
             .Add("Topic", p => p.Topic)
             .Add("Audience", p => p.Audience)
             .Add("Learning Outcomes", p => p.LearningOutcomes)
             .Add("Conclusion Phase Timing", p => $"{p.Conclusions.Timing} minutes");
 
         configs[RequestId.ReviewConclActivities] = new FormatConfiguration()
+            .Add("Context", p => p.Context)
             .Add("Topic", p => p.Topic)
             .Add("Audience", p => p.Audience)
             .Add("Learning Outcomes", p => p.LearningOutcomes)
@@ -288,6 +331,7 @@ public class LessonPlanFormatter : ILessonPlanFormatter
             .Add("Conclusion Activities to Review", p => p.Conclusions.Activities);
 
         configs[RequestId.SuggestConclActivities] = new FormatConfiguration()
+            .Add("Context", p => p.Context)
             .Add("Topic", p => p.Topic)
             .Add("Audience", p => p.Audience)
             .Add("Learning Outcomes", p => p.LearningOutcomes)
@@ -295,18 +339,21 @@ public class LessonPlanFormatter : ILessonPlanFormatter
             .Add("Conclusion Goal", p => p.Conclusions.Goal);
 
         configs[RequestId.ReviewConclMaterials] = new FormatConfiguration()
+            .Add("Context", p => p.Context)
             .Add("Topic", p => p.Topic)
             .Add("Conclusion Phase Timing", p => $"{p.Conclusions.Timing} minutes")
             .Add("Activities", p => p.Conclusions.Activities)
             .Add("Materials to Review", p => p.Conclusions.MaterialsToPrepare);
 
         configs[RequestId.SuggestConclMaterials] = new FormatConfiguration()
+            .Add("Context", p => p.Context)
             .Add("Topic", p => p.Topic)
             .Add("Conclusion Phase Timing", p => $"{p.Conclusions.Timing} minutes")
             .Add("Activities", p => p.Conclusions.Activities);
 
         // Whole Lesson Review
         configs[RequestId.ReviewWholeLesson] = new FormatConfiguration()
+            .Add("Context", p => p.Context)
             .Add("Topic", p => p.Topic)
             .Add("Audience", p => p.Audience)
             .Add("Learning Outcomes", p => p.LearningOutcomes)

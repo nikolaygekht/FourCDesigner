@@ -19,4 +19,10 @@ public interface IDbConfiguration
     /// Gets a value indicating whether to create a test user on database initialization.
     /// </summary>
     bool CreateTestUser { get; }
+
+    /// <summary>
+    /// Gets the test user password.
+    /// Used when CreateTestUser is true.
+    /// </summary>
+    string TestUserPassword { get; }
 }

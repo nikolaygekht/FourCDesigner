@@ -1,4 +1,4 @@
-using Gehtsoft.EF.Db.SqlDb;
+﻿using Gehtsoft.EF.Db.SqlDb;
 using Gehtsoft.EF.Db.SqlDb.EntityQueries;
 using Gehtsoft.EF.Entities;
 using Gehtsoft.FourCDesigner.Entities;
@@ -112,7 +112,7 @@ public class DbInitializationService : IDbInitializationService
             throw new ArgumentNullException(nameof(connection));
 
         const string testEmail = "user@fourcdesign.com";
-        const string testPassword = "test123";
+        string testPassword = mDbConfiguration.TestUserPassword;
 
         mLogger.LogInformation("Checking if test user exists: {Email}", testEmail);
 

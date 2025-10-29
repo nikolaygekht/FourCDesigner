@@ -52,6 +52,7 @@ public class TestWebApplicationFactory : WebApplicationFactory<Program>
                 ["db:driver"] = "sqlite",
                 ["db:connectionString"] = $"Data Source={mDatabaseName};Mode=Memory;Cache=Shared",
                 ["db:createTestUser"] = "true",
+                ["db:testUserPassword"] = "test123",
                 // Email configuration - ensure sending is enabled for tests
                 ["email:disableSending"] = "false",
                 ["email:sendingFrequencySeconds"] = "1",

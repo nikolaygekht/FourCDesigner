@@ -106,4 +106,114 @@ public class DbConfigurationTests
         dbConfig.Driver.Should().Be("npgsql");
         dbConfig.ConnectionString.Should().Be("Host=localhost;Database=testdb");
     }
+
+    [Fact]
+    public void CreateTestUser_WithTrueValue_ReturnsTrue()
+    {
+        // Arrange
+        var configData = new Dictionary<string, string>
+        {
+            ["db:createTestUser"] = "true"
+        };
+        var configuration = new ConfigurationBuilder()
+            .AddInMemoryCollection(configData!)
+            .Build();
+        var dbConfig = new DbConfiguration(configuration);
+
+        // Act
+        bool createTestUser = dbConfig.CreateTestUser;
+
+        // Assert
+        createTestUser.Should().BeTrue();
+    }
+
+    [Fact]
+    public void CreateTestUser_WithFalseValue_ReturnsFalse()
+    {
+        // Arrange
+        var configData = new Dictionary<string, string>
+        {
+            ["db:createTestUser"] = "false"
+        };
+        var configuration = new ConfigurationBuilder()
+            .AddInMemoryCollection(configData!)
+            .Build();
+        var dbConfig = new DbConfiguration(configuration);
+
+        // Act
+        bool createTestUser = dbConfig.CreateTestUser;
+
+        // Assert
+        createTestUser.Should().BeFalse();
+    }
+
+    [Fact]
+    public void CreateTestUser_WithMissingValue_ReturnsFalse()
+    {
+        // Arrange
+        var configuration = new ConfigurationBuilder().Build();
+        var dbConfig = new DbConfiguration(configuration);
+
+        // Act
+        bool createTestUser = dbConfig.CreateTestUser;
+
+        // Assert
+        createTestUser.Should().BeFalse();
+    }
+
+    [Fact]
+    public void CreateTestUser_WithInvalidValue_ThrowsInvalidOperationException()
+    {
+        // Arrange
+        var configData = new Dictionary<string, string>
+        {
+            ["db:createTestUser"] = "invalid"
+        };
+        var configuration = new ConfigurationBuilder()
+            .AddInMemoryCollection(configData!)
+            .Build();
+        var dbConfig = new DbConfiguration(configuration);
+
+        // Act
+        Action act = () => { var _ = dbConfig.CreateTestUser; };
+
+        // Assert
+        act.Should().Throw<InvalidOperationException>()
+            .WithMessage("*Invalid value for 'db:createTestUser'*");
+    }
+
+    [Fact]
+    public void TestUserPassword_WithConfiguredValue_ReturnsValue()
+    {
+        // Arrange
+        var configData = new Dictionary<string, string>
+        {
+            ["db:testUserPassword"] = "TestPass123!"
+        };
+        var configuration = new ConfigurationBuilder()
+            .AddInMemoryCollection(configData!)
+            .Build();
+        var dbConfig = new DbConfiguration(configuration);
+
+        // Act
+        string password = dbConfig.TestUserPassword;
+
+        // Assert
+        password.Should().Be("TestPass123!");
+    }
+
+    [Fact]
+    public void TestUserPassword_WithMissingValue_ThrowsInvalidOperationException()
+    {
+        // Arrange
+        var configuration = new ConfigurationBuilder().Build();
+        var dbConfig = new DbConfiguration(configuration);
+
+        // Act
+        Action act = () => { var _ = dbConfig.TestUserPassword; };
+
+        // Assert
+        act.Should().Throw<InvalidOperationException>()
+            .WithMessage("*Test user password not configured*");
+    }
 }

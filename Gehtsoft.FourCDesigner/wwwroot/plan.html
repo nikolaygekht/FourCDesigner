@@ -29,6 +29,14 @@
       <button type="button" class="btn btn-danger" id="start-over-button">Start Over</button>
      </div>
      <div class="form-group">
+      <label for="context" class="form-label">Lesson Context</label>
+      <textarea class="form-control" id="context" rows="4" placeholder="Important information about the lesson plan, including purpose, intent, scope, limitations, and conditions"></textarea>
+      <div class="assist-actions">
+       <button type="button" class="btn btn-sm btn-outline-secondary" data-action="review_context">Review</button>
+       <button type="button" class="btn btn-sm btn-outline-secondary" data-action="suggest_context">Suggest</button>
+      </div>
+     </div>
+     <div class="form-group">
       <label for="topic" class="form-label">Lesson Topic</label>
       <input type="text" class="form-control" id="topic" placeholder="Enter the topic of your lesson">
       <div class="assist-actions">
@@ -245,6 +253,10 @@
         <h5>Lesson Overview</h5>
        </div>
        <div class="card-body">
+        <div class="review-item">
+         <strong>Context:</strong>
+         <p id="review-context" class="text-muted">Not yet defined</p>
+        </div>
         <div class="review-item">
          <strong>Topic:</strong>
          <p id="review-topic" class="text-muted">Not yet defined</p>

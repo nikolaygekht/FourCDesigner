@@ -1,0 +1,1 @@
+docker run --detach --publish 5000:5000 --volume ./data/config:/app/Config --volume ./data/data:/app/data --volume ./data/logs:/app/logs gehtsoft:fourcdesigner

@@ -16,6 +16,8 @@ public static class RequestIdConverter
         return new Dictionary<string, RequestId>(StringComparer.Ordinal)
         {
             // Overview Section
+            ["review_context"] = RequestId.ReviewContext,
+            ["suggest_context"] = RequestId.SuggestContext,
             ["review_topic"] = RequestId.ReviewTopic,
             ["suggest_topic"] = RequestId.SuggestTopic,
             ["review_audience"] = RequestId.ReviewAudience,

@@ -12,7 +12,7 @@
  const STORAGE_KEY = 'lessonPlan';
 
  const SECTION_FIELDS = {
-  overview: ['topic', 'audience', 'learningOutcomes'],
+  overview: ['context', 'topic', 'audience', 'learningOutcomes'],
   connections: ['connections.timing', 'connections.goal', 'connections.activities', 'connections.materialsToPrepare'],
   concepts: ['concepts.timing', 'concepts.needToKnow', 'concepts.goodToKnow', 'concepts.theses', 'concepts.structure', 'concepts.activities', 'concepts.materialsToPrepare'],
   concretePractice: ['concretePractice.timing', 'concretePractice.desiredOutput', 'concretePractice.focusArea', 'concretePractice.activities', 'concretePractice.details', 'concretePractice.materialsToPrepare'],
@@ -20,6 +20,7 @@
  };
 
  const FIELD_TO_ID_MAP = {
+  'context': 'context',
   'topic': 'topic',
   'audience': 'audience',
   'learningOutcomes': 'learningOutcomes',
@@ -315,6 +316,7 @@
  function updateReviewDisplay() {
   const data = collectLessonData();
 
+  document.getElementById('review-context').textContent = data.context || 'Not yet defined';
   document.getElementById('review-topic').textContent = data.topic || 'Not yet defined';
   document.getElementById('review-audience').textContent = data.audience || 'Not yet defined';
   document.getElementById('review-learningOutcomes').textContent = data.learningOutcomes || 'Not yet defined';
@@ -483,6 +485,10 @@
  }
 
  // Review operations
+ function reviewContext() {
+  return callPlanApi('review_context');
+ }
+
  function reviewTopic() {
   return callPlanApi('review_topic');
  }
@@ -568,6 +574,10 @@
  }
 
  // Suggest operations
+ function suggestContext() {
+  return callPlanApi('suggest_context');
+ }
+
  function suggestTopic() {
   return callPlanApi('suggest_topic');
  }
@@ -656,6 +666,8 @@
   * Maps operation IDs to [fieldId, operationFunction] tuples
   */
  const OPERATION_MAP = {
+  'review_context': ['context', reviewContext],
+  'suggest_context': ['context', suggestContext],
   'review_topic': ['topic', reviewTopic],
   'suggest_topic': ['topic', suggestTopic],
   'review_audience': ['audience', reviewAudience],
@@ -950,6 +962,7 @@
   * Resets all form fields to default values
   */
  function resetToDefaults() {
+  document.getElementById('context').value = '';
   document.getElementById('topic').value = '';
   document.getElementById('audience').value = '';
   document.getElementById('learningOutcomes').value = '';

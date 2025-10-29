@@ -10,6 +10,8 @@ public class RequestIdConverterTests
     // TryConvert - Success Cases
 
     [Theory]
+    [InlineData("review_context", RequestId.ReviewContext)]
+    [InlineData("suggest_context", RequestId.SuggestContext)]
     [InlineData("review_topic", RequestId.ReviewTopic)]
     [InlineData("suggest_topic", RequestId.SuggestTopic)]
     [InlineData("review_audience", RequestId.ReviewAudience)]
@@ -275,14 +277,15 @@ public class RequestIdConverterTests
         resultMixed.Should().BeFalse("mixed case should be invalid");
     }
 
-    // Coverage Test - All 41 Operations
+    // Coverage Test - All 43 Operations
 
     [Fact]
-    public void Converter_SupportsAll41Operations()
+    public void Converter_SupportsAll43Operations()
     {
         // Arrange
         var allOperationIds = new[]
         {
+            "review_context", "suggest_context",
             "review_topic", "suggest_topic",
             "review_audience", "suggest_audience",
             "review_outcomes", "suggest_outcomes",
@@ -307,7 +310,7 @@ public class RequestIdConverterTests
         };
 
         // Act & Assert
-        allOperationIds.Length.Should().Be(41, "should have exactly 41 operation IDs");
+        allOperationIds.Length.Should().Be(43, "should have exactly 43 operation IDs");
 
         foreach (string operationId in allOperationIds)
         {
@@ -338,6 +341,7 @@ public class RequestIdConverterTests
             // Try to find a matching operation ID
             var testOperationIds = new[]
             {
+                "review_context", "suggest_context",
                 "review_topic", "suggest_topic",
                 "review_audience", "suggest_audience",
                 "review_outcomes", "suggest_outcomes",

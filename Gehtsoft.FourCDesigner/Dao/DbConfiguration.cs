@@ -42,4 +42,9 @@ public class DbConfiguration : IDbConfiguration
             return result;
         }
     }
+
+    /// <inheritdoc/>
+    public string TestUserPassword =>
+        mConfiguration["db:testUserPassword"] ??
+        throw new InvalidOperationException("Test user password not configured. Set 'db:testUserPassword' in appsettings.json");
 }
