@@ -1,3 +1,4 @@
+using Gehtsoft.FourCDesigner.Logic.Config;
 using Gehtsoft.FourCDesigner.Logic.User;
 using Gehtsoft.FourCDesigner.Middleware.Throttling;
 using Microsoft.AspNetCore.Mvc;
@@ -14,19 +15,23 @@ namespace Gehtsoft.FourCDesigner.Controllers;
 public class AccountActionController : ControllerBase
 {
     private readonly IUserController mUserController;
+    private readonly ISystemConfig mSystemConfig;
     private readonly ILogger<AccountActionController> mLogger;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="AccountActionController"/> class.
     /// </summary>
     /// <param name="userController">The user controller.</param>
+    /// <param name="systemConfig">The system configuration.</param>
     /// <param name="logger">The logger.</param>
     /// <exception cref="ArgumentNullException">Thrown when any parameter is null.</exception>
     public AccountActionController(
         IUserController userController,
+        ISystemConfig systemConfig,
         ILogger<AccountActionController> logger)
     {
         mUserController = userController ?? throw new ArgumentNullException(nameof(userController));
+        mSystemConfig = systemConfig ?? throw new ArgumentNullException(nameof(systemConfig));
         mLogger = logger ?? throw new ArgumentNullException(nameof(logger));
     }
 
@@ -70,7 +75,7 @@ public class AccountActionController : ControllerBase
                 MaxAge = TimeSpan.FromMinutes(5)
             });
 
-            return Redirect("/resetpassword.html");
+            return Redirect($"{mSystemConfig.ExternalPrefix}/resetpassword.html");
         }
 
         mLogger.LogWarning("Reset token invalid or expired for email: {Email}, forwarding to login", email);
@@ -92,7 +97,7 @@ public class AccountActionController : ControllerBase
             MaxAge = TimeSpan.FromMinutes(5)
         });
 
-        return Redirect("/login.html");
+        return Redirect($"{mSystemConfig.ExternalPrefix}/login.html");
     }
 
     /// <summary>
@@ -136,7 +141,7 @@ public class AccountActionController : ControllerBase
                     MaxAge = TimeSpan.FromMinutes(5)
                 });
 
-                return Redirect("/login.html");
+                return Redirect($"{mSystemConfig.ExternalPrefix}/login.html");
             }
 
             mLogger.LogWarning("Account activation failed for email: {Email} - invalid or expired token", email);
@@ -158,7 +163,7 @@ public class AccountActionController : ControllerBase
                 MaxAge = TimeSpan.FromMinutes(5)
             });
 
-            return Redirect("/login.html");
+            return Redirect($"{mSystemConfig.ExternalPrefix}/login.html");
         }
         catch (Exception ex)
         {
@@ -181,7 +186,7 @@ public class AccountActionController : ControllerBase
                 MaxAge = TimeSpan.FromMinutes(5)
             });
 
-            return Redirect("/login.html");
+            return Redirect($"{mSystemConfig.ExternalPrefix}/login.html");
         }
     }
 }
