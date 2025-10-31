@@ -7,8 +7,8 @@
 
     // Configuration
     const SESSION_STORAGE_KEY = 'sessionId';
-    const API_BASE_URL = '/api/user';
-    const HOME_PAGE = '/index.html';
+    const API_BASE_URL = '$(external-prefix)/api/user';
+    const HOME_PAGE = '$(external-prefix)/index.html';
 
     const loginForm = document.getElementById('login-form');
     const emailInput = document.getElementById('email');

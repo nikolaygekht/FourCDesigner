@@ -1,6 +1,7 @@
-FROM mcr.microsoft.com/dotnet/aspnet:8.0.21-alpine3.22-icu
-RUN apk update
+FROM mcr.microsoft.com/dotnet/aspnet:8.0-azurelinux3.0
 WORKDIR /app
 COPY ./bin /app
 EXPOSE 5000
-ENTRYPOINT ["dotnet", "Gehtsoft.FourCDesigner.dll"]
+COPY ./start.sh .
+RUN chmod +x start.sh
+ENTRYPOINT ["/bin/sh", "./start.sh"]

@@ -6,8 +6,8 @@
     'use strict';
 
     // Configuration
-    const API_BASE_URL = '/api/user';
-    const LOGIN_PAGE = '/login.html';
+    const API_BASE_URL = '$(external-prefix)/api/user';
+    const LOGIN_PAGE = '$(external-prefix)/login.html';
 
     const registerForm = document.getElementById('register-form');
     const emailInput = document.getElementById('email');

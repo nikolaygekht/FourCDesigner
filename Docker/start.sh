@@ -1,0 +1,2 @@
+DOTNET_RUNTIME_ID=linux-x64
+dotnet Gehtsoft.FourCDesigner.dll

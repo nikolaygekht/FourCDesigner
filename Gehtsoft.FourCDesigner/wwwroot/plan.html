@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
  <!--#include file="includes/head.html" -->
- <link rel="stylesheet" href="/css/plan.css?v=$(app-version)">
+ <link rel="stylesheet" href="$(external-prefix)/css/plan.css?v=$(app-version)">
  <title>Lesson Plan - 4C Instructional Designer</title>
 </head>
 <body>
@@ -386,7 +386,7 @@
      <h2>Export Lesson Plan</h2>
      <p class="text-muted">Download or print your completed lesson plan.</p>
      <div class="export-actions mb-4">
-      <a href="/print.html" class="btn btn-primary me-2" target="_blank">Open Print View</a>
+      <a href="$(external-prefix)/print.html" class="btn btn-primary me-2" target="_blank">Open Print View</a>
       <button type="button" class="btn btn-secondary save-section-button">Save Current Progress</button>
      </div>
      <div class="alert alert-info" role="alert">
@@ -440,6 +440,6 @@
  </div>
 
  <!--#include file="includes/scripts.html" -->
- <script src="/js/plan.js?v=$(app-version)"></script>
+ <script src="$(external-prefix)/js/plan.js?v=$(app-version)"></script>
 </body>
 </html>

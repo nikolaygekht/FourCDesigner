@@ -14,8 +14,8 @@
     // Configuration
     const SESSION_STORAGE_KEY = 'sessionId';
     const VALIDATION_INTERVAL = 60000; // 60 seconds
-    const API_BASE_URL = '/api/user';
-    const LOGIN_PAGE = '/login.html';
+    const API_BASE_URL = '$(external-prefix)/api/user';
+    const LOGIN_PAGE = '$(external-prefix)/login.html';
 
     // Skip session validation on public pages (login, register, reset password)
     const currentPage = window.location.pathname;

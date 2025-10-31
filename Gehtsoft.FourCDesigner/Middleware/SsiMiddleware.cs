@@ -7,8 +7,8 @@ using System.Threading.Tasks;
 namespace Gehtsoft.FourCDesigner.Middleware
 {
     /// <summary>
-    /// Middleware that processes Server Side Include (SSI) directives in HTML files.
-    /// Supports the <!--#include file="path" --> directive and $(app-version) variable.
+    /// Middleware that processes Server Side Include (SSI) directives in HTML files and variable substitutions in HTML and JavaScript files.
+    /// Supports the <!--#include file="path" --> directive (HTML only) and variables: $(app-version), $(external-prefix).
     /// </summary>
     public class SsiMiddleware
     {
@@ -35,7 +35,7 @@ namespace Gehtsoft.FourCDesigner.Middleware
 
         public async Task InvokeAsync(HttpContext context)
         {
-            // Only process GET requests for HTML files
+            // Only process GET requests for HTML and JavaScript files
             if (!context.Request.Method.Equals("GET", StringComparison.OrdinalIgnoreCase))
             {
                 await _next(context);
@@ -55,19 +55,38 @@ namespace Gehtsoft.FourCDesigner.Middleware
                     // Call the next middleware
                     await _next(context);
 
-                    // Only process HTML content
-                    if (context.Response.ContentType != null &&
-                        context.Response.ContentType.Contains("text/html", StringComparison.OrdinalIgnoreCase))
+                    // Ensure all data is written to the memory stream
+                    await context.Response.Body.FlushAsync();
+
+                    // Check if this is HTML or JavaScript content
+                    bool isHtml = context.Response.ContentType != null &&
+                                  context.Response.ContentType.Contains("text/html", StringComparison.OrdinalIgnoreCase);
+
+                    bool isJavaScript = context.Response.ContentType != null &&
+                                       (context.Response.ContentType.Contains("application/javascript", StringComparison.OrdinalIgnoreCase) ||
+                                        context.Response.ContentType.Contains("text/javascript", StringComparison.OrdinalIgnoreCase));
+
+                    // Process HTML or JavaScript content
+                    if ((isHtml || isJavaScript) && memoryStream.Length > 0)
                     {
                         // Read the response
                         memoryStream.Seek(0, SeekOrigin.Begin);
                         string responseBody = await new StreamReader(memoryStream).ReadToEndAsync();
 
-                        // Process SSI includes
-                        string processedBody = ProcessIncludes(responseBody);
+                        string processedBody;
 
-                        // Process variables
-                        processedBody = ProcessVariables(processedBody);
+                        if (isHtml)
+                        {
+                            // Process SSI includes (only for HTML)
+                            processedBody = ProcessIncludes(responseBody);
+                            // Process variables
+                            processedBody = ProcessVariables(processedBody);
+                        }
+                        else
+                        {
+                            // For JavaScript, only process variables (no SSI includes)
+                            processedBody = ProcessVariables(responseBody);
+                        }
 
                         // Write processed content to original stream
                         context.Response.ContentLength = null; // Clear content length as it may change
@@ -143,6 +162,7 @@ namespace Gehtsoft.FourCDesigner.Middleware
         /// <summary>
         /// Processes variable substitutions in the HTML content.
         /// Replaces $(app-version) with the configured application version.
+        /// Replaces $(external-prefix) with the configured external prefix.
         /// </summary>
         /// <param name="html">The HTML content to process.</param>
         /// <returns>The processed HTML with variables replaced.</returns>
@@ -153,6 +173,9 @@ namespace Gehtsoft.FourCDesigner.Middleware
 
             // Replace $(app-version) with the configured version
             html = html.Replace("$(app-version)", _config.AppVersion);
+
+            // Replace $(external-prefix) with the configured external prefix
+            html = html.Replace("$(external-prefix)", _config.ExternalPrefix);
 
             return html;
         }

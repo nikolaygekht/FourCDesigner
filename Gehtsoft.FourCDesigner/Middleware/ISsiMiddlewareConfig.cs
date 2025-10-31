@@ -10,4 +10,10 @@ public interface ISsiMiddlewareConfig
     /// Maps to system:version in configuration.
     /// </summary>
     string AppVersion { get; }
+
+    /// <summary>
+    /// Gets the external prefix for routing (e.g., "/api" or empty string).
+    /// Maps to system:routing:externalPrefix in configuration.
+    /// </summary>
+    string ExternalPrefix { get; }
 }

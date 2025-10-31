@@ -429,7 +429,7 @@
    };
 
    // Make API call
-   fetch('/api/plan/assistance', {
+   fetch('$(external-prefix)/api/plan/assistance', {
     method: 'POST',
     headers: {
      'Content-Type': 'application/json',

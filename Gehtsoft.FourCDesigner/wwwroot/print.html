@@ -2,14 +2,14 @@
 <html lang="en">
 <head>
  <!--#include file="includes/head.html" -->
- <link rel="stylesheet" href="/css/print.css?v=$(app-version)">
+ <link rel="stylesheet" href="$(external-prefix)/css/print.css?v=$(app-version)">
  <title>Print Lesson Plan - 4C Instructional Designer</title>
 </head>
 <body>
  <div class="print-container">
   <div class="no-print action-bar">
    <button type="button" class="btn btn-primary" id="print-button">Print / Save as PDF</button>
-   <a href="/plan.html" class="btn btn-secondary">Back to Editor</a>
+   <a href="$(external-prefix)/plan.html" class="btn btn-secondary">Back to Editor</a>
   </div>
 
   <div class="print-content">
@@ -154,6 +154,6 @@
  </div>
 
  <!--#include file="includes/scripts.html" -->
- <script src="/js/print.js?v=$(app-version)"></script>
+ <script src="$(external-prefix)/js/print.js?v=$(app-version)"></script>
 </body>
 </html>

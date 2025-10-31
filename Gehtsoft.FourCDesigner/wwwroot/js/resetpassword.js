@@ -6,8 +6,8 @@
     'use strict';
 
     // Configuration
-    const API_BASE_URL = '/api/user';
-    const LOGIN_PAGE = '/login.html';
+    const API_BASE_URL = '$(external-prefix)/api/user';
+    const LOGIN_PAGE = '$(external-prefix)/login.html';
 
     const resetForm = document.getElementById('reset-password-form');
     const passwordInput = document.getElementById('password');
